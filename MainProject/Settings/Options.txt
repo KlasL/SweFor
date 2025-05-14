@@ -1,0 +1,37 @@
+﻿* AIMMS
+always_store_marginals 1
+time_limit 72000
+* CBC 2.9
+* CONOPT 4.1
+* COPT 6.0
+* CPLEX 22.1
+"CPLEX 22.1".LP_method 4
+* CPOptimizer 22.1
+* GUROBI 11.0
+"GUROBI 11.0".Method 2
+* IPOPT 3.11
+* MINOS
+* ODH-CPLEX 5.3
+* Octeract 4.7
+* PATH 4.7
+* SNOPT 7.2
+* GUROBI 10.0
+"GUROBI 10.0".Method 2
+* GUROBI 9.5
+"GUROBI 9.5".Method 2
+"GUROBI 9.5".Warm_start 2
+* CPLEX 20.1
+"CPLEX 20.1".LP_method 4
+* GUROBI 7.0
+"GUROBI 7.0".Method 1
+* CPLEX 12.7.1
+"CPLEX 12.7.1".advanced_start 1
+"CPLEX 12.7.1".LP_method 4
+* GUROBI 9.0
+"GUROBI 9.0".Method 2
+* GUROBI 7.5
+"GUROBI 7.5".Method 2
+* GUROBI 9.1
+"GUROBI 9.1".Method 2
+* NETSOL
+* Environment

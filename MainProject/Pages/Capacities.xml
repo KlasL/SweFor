@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2019-06-09 22:16:35">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Table">
+		<Location top="42" left="42" bottom="384" right="552" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotCapacity( t, ft )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="11" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="48" left="594" bottom="396" right="1296" />
+		<TabOrder>4</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotFactorOutput( fut, t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="12" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="426" left="54" bottom="786" right="540" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotInvestment( t, ft )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="11" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="420" left="612" bottom="822" right="1284" />
+		<TabOrder>3</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotMaintenance( t, ft )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="11" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>TotCapacity</Symbol>
+			<Symbol>TotMaintenance</Symbol>
+			<Symbol>TotInvestment</Symbol>
+			<Symbol>TotFactorOutput</Symbol>
+			<Symbol>t</Symbol>
+			<Symbol>ft</Symbol>
+			<Symbol>fut</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

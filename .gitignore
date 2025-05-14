@@ -1,0 +1,13 @@
+/Results
+/log
+/backup
+/.edited
+*.data
+*.aimms
+*.aimmslockfile
+/UpdateLog.txt
+/Data
+!/Data/InputOutput#2.xlsx
+!/Data/SweForFacilytyData#2.xlsx
+!/Data/AnalysisFacilities#2.xlsx
+!/Data/DistancesLocToLoc.txt

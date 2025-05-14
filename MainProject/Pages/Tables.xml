@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2021-01-03 10:29:10">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Table">
+		<Location top="48" left="42" bottom="306" right="1308" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotalSupply( fut, t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="11" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="336" left="42" bottom="564" right="1380" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotInvestment( t, ft )</Identifier>
+			<Permutation>[1,0]</Permutation>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="11" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="576" left="42" bottom="768" right="1332" />
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotCapacity( t, ft )</Identifier>
+			<Permutation>[1,0]</Permutation>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="11" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>TotalSupply</Symbol>
+			<Symbol>TotCapacity</Symbol>
+			<Symbol>TotInvestment</Symbol>
+			<Symbol>t</Symbol>
+			<Symbol>ft</Symbol>
+			<Symbol>fut</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

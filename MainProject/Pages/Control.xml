@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2024-09-24 04:11:03">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Table">
+		<Location top="60" left="66" bottom="132" right="234" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>RNDrun</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="5" Decimals="2" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>RetentionRate</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="6" Decimals="3" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>SetasideRate</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="6" Decimals="3" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>RelativLSA</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="5" Decimals="2" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="60" left="294" bottom="120" right="492" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>AmenityValuePerM3</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="5" Decimals="2" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ForestCValuePerTonC</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="7" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>SetAsideValuePerHa</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="7" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>RNDrun</Symbol>
+			<Symbol>RetentionRate</Symbol>
+			<Symbol>SetasideRate</Symbol>
+			<Symbol>RelativLSA</Symbol>
+			<Symbol>AmenityValuePerM3</Symbol>
+			<Symbol>ForestCValuePerTonC</Symbol>
+			<Symbol>SetAsideValuePerHa</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

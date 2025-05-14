@@ -1,0 +1,700 @@
+## ams_version=1.0
+
+Model Main_SweFor {
+    DeclarationSection ForestModel {
+        Set Plots {
+            Index: i;
+        }
+        Set Progs {
+            SubsetOf: Integers;
+            Index: j;
+        }
+        Set Periods {
+            SubsetOf: Integers;
+            Index: t;
+        }
+        Parameter Area {
+            IndexDomain: i;
+        }
+        Parameter AreaPlots {
+            Definition: sum [ i, Area(i) ];
+        }
+        Parameter AreaScale {
+            Definition: {
+                0.95
+                !22500000*0.9/AreaPlots
+                !22.5*10e6*0.9/AreaPlots
+            }
+        }
+        Parameter Slope {
+            IndexDomain: i;
+            Definition: 1;
+        }
+        Parameter xCoord {
+            IndexDomain: i;
+        }
+        Parameter yCoord {
+            IndexDomain: i;
+        }
+        Parameter mToRoad {
+            IndexDomain: i;
+            Definition: 250;
+        }
+        StringParameter SoilMoist {
+            IndexDomain: i;
+        }
+        StringParameter Treatm {
+            IndexDomain: (i,j,t);
+        }
+        StringParameter ThinType {
+            IndexDomain: (i,j,t);
+        }
+        StringParameter ContCat {
+            IndexDomain: (i,j);
+        }
+        Parameter m3fubPulpw {
+            IndexDomain: (i,j,t);
+        }
+        Parameter m3fubSawt {
+            IndexDomain: (i,j,t);
+        }
+        Parameter CostTotal {
+            IndexDomain: (i,j,t);
+        }
+        Parameter tonResid {
+            IndexDomain: (i,j,t);
+        }
+        Parameter CostResid {
+            IndexDomain: (i,j,t);
+        }
+        Parameter m3Harv {
+            IndexDomain: (i,j,t);
+            Text: "m3sk harvested (not resid)";
+        }
+        Parameter m3Vol {
+            IndexDomain: (i,j,t);
+        }
+        Variable x {
+            IndexDomain: (i,j);
+            Range: nonnegative;
+        }
+        Variable m3HarvTot {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j), AreaScale/5 * m3Harv(i,j,t) * Area(i) * x(i,j) ];
+        }
+        Variable m3VolTot {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j), AreaScale/5 * m3Vol(i,j,t) * Area(i) * x(i,j) ];
+        }
+        Variable HarvSawtTot {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j), AreaScale/5 * m3fubSawt(i,j,t) * Area(i) * x(i,j) ];
+        }
+        Variable HarvPulpwTot {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j), AreaScale/5 * m3fubPulpw(i,j,t) * Area(i) * x(i,j) ];
+        }
+        Variable HarvGROTTot {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j) | Treatm(i,j,t)="Fina", AreaScale/5 * tonResid(i,j,t) * Area(i) * x(i,j) ];
+        }
+        Variable HarvRojgallTot {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j) | ThinType(i,j,t)="Biofue" , AreaScale/5 * tonResid(i,j,t) *Area(i) * x(i,j) ];
+        }
+        Variable HarvestCost {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j), AreaScale/5 * (CostTotal(i,j,t)-CostResid(i,j,t)) * Area(i) * x(i,j) ];
+        }
+        Constraint maxArea {
+            IndexDomain: i;
+            Definition: sum [j, x(i,j) ]=1;
+        }
+        Constraint minVolTot {
+            Definition: m3VolTot(card(Periods)) - m3HarvTot(card(Periods)) >= m3VolTot(1);
+        }
+    }
+    DeclarationSection ConvFactors {
+        Parameter MWhperTonTS {
+            Definition: 4.8;
+            Comment: "WECalc, Skogforsk";
+        }
+        Parameter TonTSperM3fub {
+            Definition: 0.46;
+            Comment: "0.53 löv, 0.45 barr) (WECalc, Skogforsk), volymviktat mot stående virkesförråd barr-löv i Sverige";
+        }
+        Parameter SawdustM3fubSawt {
+            Definition: {
+                0.1019
+                ! 0.1 original
+            }
+            Comment: "referenser i Fjärrsynsrapporten";
+        }
+        Parameter ChipsM3fubSawt {
+            Definition: 0.261;
+            Comment: "referenser i Fjärrsynsrapporten";
+        }
+    }
+    DeclarationSection Transports {
+        Set Sawm {
+            SubsetOf: Integers;
+            Index: w;
+        }
+        Set Pulpm {
+            SubsetOf: Integers;
+            Index: u;
+        }
+        Set Heatp {
+            SubsetOf: Integers;
+            Index: h, h2;
+        }
+        Parameter DistPlotSm {
+            IndexDomain: (i,w);
+        }
+        Parameter DistPlotPm {
+            IndexDomain: (i,u);
+        }
+        Parameter DistPlotHp {
+            IndexDomain: (i,h);
+        }
+        Parameter DistSmPm {
+            IndexDomain: (w,u);
+        }
+        Parameter DistHpHp {
+            IndexDomain: (h,h2);
+        }
+        Parameter DistSmHp {
+            IndexDomain: (w,h);
+        }
+        Parameter MaxTrpDist {
+            IndexDomain: b;
+            Definition: {
+                !data { (Sm):90000, (Pm):90000, (Hp):90000 }
+            }
+        }
+        Parameter MinTrpDistPlotHp {
+            IndexDomain: i;
+            Definition: min[ h, DistPlotHp(i,h) ];
+        }
+        Parameter CapacitySm {
+            IndexDomain: (t,w);
+        }
+        Parameter CapacityPm {
+            IndexDomain: (t,u);
+        }
+        Parameter CapacityHp {
+            IndexDomain: (t,h);
+            Range: nonnegative;
+        }
+        Parameter CapacityTotSm {
+            IndexDomain: t;
+            Definition: sum[ w, CapacitySm(t,w) ];
+        }
+        Parameter CapacityTotPm {
+            IndexDomain: t;
+            Definition: sum[ u, CapacityPm(t,u) ];
+        }
+        Parameter CapacityTotHp {
+            IndexDomain: t;
+            Definition: sum[ h, CapacityHp(t,h) ];
+        }
+        Parameter Slinger {
+            IndexDomain: b;
+            Definition: data { (Sm):1.3, (Pm):1.2, (Hp):1.2 };
+        }
+        Variable SawtToSm {
+            IndexDomain: (i,t,w) | DistPlotSm(i,w) <= MaxTrpDist(BranchSm);
+            Range: nonnegative;
+        }
+        Variable SawtToPm {
+            IndexDomain: (i,t,u)| DistPlotPm(i,u) <= MaxTrpDist(BranchPm);
+            Range: nonnegative;
+        }
+        Variable PulpwToPm {
+            IndexDomain: (i,t,u) | DistPlotPm(i,u) <= MaxTrpDist(BranchPm);
+            Range: nonnegative;
+        }
+        Variable ResidToHp {
+            IndexDomain: (i,t,h) | DistPlotHp(i,h) <= MinTrpDistPlotHp(i);
+            Range: nonnegative;
+        }
+        Variable ChipsToPm {
+            IndexDomain: (t,w,u) | DistSmPm(w,u) <= MaxTrpDist(BranchPm);
+            Range: nonnegative;
+        }
+        Variable PulpwToHp {
+            IndexDomain: (i,t,h)  | DistPlotHp(i,h) <= MinTrpDistPlotHp(i);
+            Range: nonnegative;
+        }
+        Variable ResidHpHp {
+            IndexDomain: (t,h,h2);
+            Range: nonnegative;
+        }
+        Variable SawdToHp {
+            IndexDomain: (t,w,h);
+            Range: nonnegative;
+        }
+        Constraint ConSawtTrp {
+            IndexDomain: (i,t);
+            Definition: {
+                sum[ j, AreaScale/5 * m3fubSawt(i,j,t) * Area(i) * x(i,j) ] =
+                sum[ w, SawtToSm(i,t,w) ] + sum[ u, SawtToPm(i,t,u) ]
+            }
+        }
+        Constraint ConPulpwTrp {
+            IndexDomain: (i,t);
+            Definition: {
+                sum[ j, AreaScale/5 * m3fubPulpw(i,j,t) * Area(i) * x(i,j) ] =
+                sum[ u, PulpwToPm(i,t,u) ] + sum[ h, PulpwToHp(i,t,h) ]
+                
+                !sum[ j, AreaScale/5 * m3fubPulpw(i,j,t) * Area(i) * x(i,j) ] >=
+                !sum[ u, PulpwToPm(i,t,u) ] + sum[ h, PulpwToHp(i,t,h) ]
+            }
+        }
+        Constraint ConResidTrp {
+            IndexDomain: (i,t);
+            Definition: {
+                GROTused(i,t) + RojgallUsed(i,t) =
+                sum[ h, ResidToHp(i,t,h) ]
+            }
+        }
+        Constraint ConChipsTrp {
+            IndexDomain: (w,t);
+            Definition: {
+                sum[ i, ChipsM3fubSawt * SawtToSm(i,t,w) ] >=
+                sum[ u, ChipsToPm(t,w,u) ]
+            }
+        }
+        Constraint ConSawdTrp {
+            IndexDomain: (w,t);
+            Definition: {
+                sum[ i, SawdustM3fubSawt * SawtToSm(i,t,w) ] >=
+                sum[ h, SawdToHp(t,w,h)]
+            }
+        }
+        Constraint MaxToSm {
+            IndexDomain: (t,w);
+            Definition: sum[ i, SawtToSm(i,t,w) ] <= CapacitySm(t,w);
+        }
+        Constraint MaxToPm {
+            IndexDomain: (t,u);
+            Definition: {
+                sum[ i, PulpwToPm(i,t,u) ] + 
+                sum[ w, ChipsToPm(t,w,u) ] +
+                sum[ i, SawtToPm(i,t,u) ]
+                <= CapacityPm(t,u)
+            }
+        }
+        Constraint MaxToHp {
+            IndexDomain: (t,h);
+            Definition: {
+                sum[ (i), MWhperTonTS * ResidToHp(i,t,h) ] +
+                sum[ (i), TonTSperM3fub * MWhperTonTS * PulpwToHp(i,t,h)] +
+                sum[h2, ResidHpHp(t,h2,h) ] -
+                sum[h2, ResidHpHp(t,h,h2) ] +
+                sum[ w, TonTSperM3fub * MWhperTonTS * SawdToHp(t,w,h)] 
+                <= CapacityHp(t,h)
+            }
+        }
+        Variable GROTUsed {
+            IndexDomain: (i,t);
+            Range: nonnegative;
+        }
+        Variable RojgallUsed {
+            IndexDomain: (i,t);
+            Range: nonnegative;
+        }
+        Constraint GROTUsage {
+            IndexDomain: (i,t);
+            Definition: {
+                GROTUsed(i,t) =
+                sum[ j | Treatm(i,j,t)="Fina",
+                tonResid(i,j,t) * x(i,j) * Area(i) * AreaScale/5 ]
+            }
+        }
+        Constraint RojgallUsage {
+            IndexDomain: (i,t);
+            Definition: {
+                RojgallUsed(i,t) =
+                sum[ j | ThinType(i,j,t)="Biofue" ,
+                tonResid(i,j,t) * x(i,j) * Area(i)]  * AreaScale/5
+                
+                !sum[ j | ThinType(i,j,t)="Biofue" AND ContCat(i,j)="TreeM" ,
+            }
+        }
+        Variable CostSawt {
+            IndexDomain: t;
+            Range: free;
+            Definition: {
+                sum[ (i,w),
+                 SawtToSm(i,t,w) * TonTSperM3fub * ( 31.824 + 1.4339 * DistPlotSm(i,w) * Slinger(BranchSm) / 1000 ) ]
+            }
+        }
+        Variable CostPulpw {
+            IndexDomain: t;
+            Range: free;
+            Definition: {
+                sum[ (i,u), PulpwToPm(i,t,u) * TonTSperM3fub *
+                  ( 31.824 + 1.4339 * DistPlotPm(i,u) * Slinger(BranchPm) / 1000 ) ] +
+                sum[ (w,u), ChipsToPm(t,w,u) * TonTSperM3fub *
+                  ( 31.824 + 1.4339 * DistSmPm(w,u) * Slinger(BranchPm) / 1000 ) ] +
+                sum[ (i,u), SawtToPm(i,t,u) * TonTSperM3fub *
+                  ( 31.824 + 1.4339 * DistPlotPm(i,u) * Slinger(BranchPm) / 1000 ) ]
+            }
+        }
+        Variable CostFuelw {
+            IndexDomain: t;
+            Range: free;
+            Definition: {
+                sum[ (i), GROTused(i,t) * ( 129+0.1879*mToRoad(i) ) ] +
+                sum[ (i,h), ResidToHp(i,t,h) *
+                  ((52.1 + 1.9206 * DistPlotHp(i,h) * Slinger(BranchHp)/ 1000 ) + 65.9+78.8/2 ) ] +
+                sum[(i,h), PulpwToHp(i,t,h)* TonTSperM3fub *
+                  ( 31.824 + 1.4339 * DistPlotHp(i,h) * Slinger(BranchPm) / 1000 ) ] +
+                sum[ (h,h2), ResidHpHp(t,h,h2) *
+                  ((52.1 + 1.9206 * DistHpHp(h,h2) * Slinger(BranchHp)/ 1000 ) + 65.9+78.8/2 ) ] +
+                sum[ (w,h), SawdToHp(t,w,h) * TonTSperM3fub *
+                  ((52.1 + 1.9206 * DistSmHp(w,h) * Slinger(BranchHp)/ 1000 ) + 65.9+78.8/2 ) ]
+            }
+            Comment: "Cost per ton GROT according to Ha default";
+        }
+        Variable ToSmTot {
+            IndexDomain: t;
+            Range: nonnegative;
+            Definition: sum[ (i,w), SawtToSm(i,t,w) ];
+        }
+        Variable ToPmTot {
+            IndexDomain: (t);
+            Range: nonnegative;
+            Definition: {
+                sum[ (i,u), PulpwToPm(i,t,u) ] + 
+                sum[ (w,u), ChipsToPm(t,w,u) ] + 
+                sum[ (i,u), SawtToPm(i,t,u) ]
+            }
+        }
+        Variable ToHpTot {
+            IndexDomain: t;
+            Range: nonnegative;
+            Definition: {
+                sum[ (i,h), MWhperTonTS * ResidToHp(i,t,h) ] +
+                sum[ (i,h), TonTSperM3fub * MWhperTonTS * PulpwToHp(i,t,h)] +
+                sum[ (w,h), TonTSperM3fub * MWhperTonTS * SawdToHp(t,w,h)]
+            }
+        }
+        Parameter SawdToHpTo {
+            IndexDomain: t;
+            Range: nonnegative;
+            Definition: {
+                sum[ (i,h), MWhperTonTS * ResidToHp(i,t,h) ] +
+                sum[ (i,h), TonTSperM3fub * MWhperTonTS * PulpwToHp(i,t,h)] +
+                sum[ (w,h), TonTSperM3fub * MWhperTonTS * SawdToHp(t,w,h)]
+            }
+        }
+    }
+    DeclarationSection DemandModel {
+        Set Branches {
+            Index: b;
+            Definition: data { Sm, Pm, Hp };
+        }
+        ElementParameter BranchSm {
+            Range: Branches;
+            Definition: {
+                'Sm' ;
+            }
+        }
+        ElementParameter BranchPm {
+            Range: Branches;
+            Definition: {
+                'Pm' ;
+            }
+        }
+        ElementParameter BranchHp {
+            Range: Branches;
+            Definition: {
+                'Hp' ;
+            }
+        }
+        Set pSteps {
+            SubsetOf: Integers;
+            Index: s;
+            Definition: {
+                {1..1000}
+            }
+        }
+        ElementParameter noOfpSteps {
+            Range: pSteps;
+            Definition: last(pSteps);
+        }
+        Parameter Elast {
+            IndexDomain: b;
+            Definition: {
+                data { (Sm):-1.0, (Pm):-1.0, (Hp):-99 }
+                !data { (Sm):-0.5, (Pm):-0.5, (Hp):-0.001 } ! <-- enligt ref.
+            }
+        }
+        Parameter ImportRelation {
+            IndexDomain: b;
+            Definition: data { (Sm):1.5, (Pm):1.5, (Hp):1 };
+        }
+        Parameter p0 {
+            IndexDomain: (t,b);
+        }
+        Parameter q0 {
+            IndexDomain: (t,b);
+        }
+        Parameter pMax {
+            IndexDomain: (t,b);
+            Definition: ImportRelation(b)*p0(t,b);
+        }
+        Parameter pMin {
+            IndexDomain: (t,b);
+            Definition: {
+                if b=BranchSm then
+                  p0(t,b)*(CapacityTotSm(t)/q0(t,b))^(1/Elast(b))
+                elseif b=BranchPm then
+                  p0(t,b)*(CapacityTotPm(t)/q0(t,b))^(1/Elast(b))
+                else
+                  pMax(t,b)
+                endif
+            }
+        }
+        Parameter q {
+            IndexDomain: (s,t,b);
+            Definition: {
+                if s=card(pSteps) then
+                  q0(t,b)*(pMax(t,b)/p0(t,b))^Elast(b)
+                else
+                  q0(t,b)* [(p(s,t,b)/p0(t,b))^Elast(b) - (p(s+1,t,b)/p0(t,b))^Elast(b) ]
+                endif
+            }
+        }
+        Parameter p {
+            IndexDomain: (s,t,b);
+            Definition: ((pMax(t,b)-pMin(t,b))/(card(pSteps)-1)*(s-1)+pMin(t,b));
+        }
+        Variable SupplToMarket {
+            IndexDomain: (s,t,b);
+            Range: nonnegative;
+        }
+        Constraint DemInStep {
+            IndexDomain: (s,t,b);
+            Definition: SupplToMarket(s,t,b) <= q(s,t,b);
+        }
+        Constraint DemEqSupply {
+            IndexDomain: (t,b);
+            Definition: {
+                if b=BranchSm then
+                  ToSmTot(t) =
+                  sum[ s, SupplToMarket(s,t,b) ]
+                elseif b=BranchPm then
+                  ToPmTot(t) =
+                  sum[ s, SupplToMarket(s,t,b) ]
+                else
+                  ToHpTot(t) =
+                  sum[ s, SupplToMarket(s,t,b) ]
+                endif
+            }
+        }
+    }
+    DeclarationSection SurplusModel {
+        Parameter df {
+            IndexDomain: t;
+            Definition: 0.97^((t-1)*5);
+        }
+        Variable NPVRevenue {
+            Definition: sum[ (s,t,b), df[t] * SupplToMarket(s,t,b) * p(s,t,b) ];
+        }
+        Variable NPVCosts {
+            Range: free;
+            Definition: {
+                !sum[ t, df(t) * ( HarvestCost(t) ) ]
+                sum[ t, df(t) * ( HarvestCost(t) + CostSawt(t) + CostPulpw(t) + CostFuelw(t) ) ]
+            }
+        }
+        Variable NetSurplus {
+            Range: free;
+            Definition: NPVRevenue - NPVCosts;
+        }
+    }
+    DeclarationSection AnalysisParam {
+        Parameter RojgallUsedTot {
+            IndexDomain: t;
+            Definition: sum[ i, RojgallUsed(i,t) ];
+        }
+        Parameter GROTUsedTot {
+            IndexDomain: t;
+            Definition: sum[ i, GROTUsed(i,t) ];
+        }
+        Parameter PulpwToHpTot {
+            IndexDomain: t;
+            Definition: sum[(i,h), PulpwToHp(i,t,h)];
+        }
+        Parameter TotSupply {
+            IndexDomain: (t,b);
+            Definition: sum[ s, SupplToMarket(s,t,b) ];
+        }
+        Parameter MWhResid {
+            IndexDomain: t;
+            Definition: sum[ (i,h), MWhperTonTS * ResidToHp(i,t,h) ];
+        }
+        Parameter MWhSawdust {
+            IndexDomain: t;
+            Definition: SawdustM3fubSawt * TonTSperM3fub * MWhperTonTS * ToSmTot(t);
+        }
+        Parameter MWhPulpw {
+            IndexDomain: t;
+            Definition: sum[ (i,h), TonTSperM3fub * MWhperTonTS * PulpwToHp(i,t,h)];
+        }
+        Parameter FinalPrices {
+            IndexDomain: (t,b);
+            Definition: min[ s | SupplToMarket(s,t,b) >0, p(s,t,b) ];
+        }
+        Parameter m3VolTotThin {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j) | Treatm(i,j,t)="Thin", AreaScale/5 * m3Harv(i,j,t)  * Area(i) * x(i,j) ];
+        }
+        Parameter m3VolTotFina {
+            IndexDomain: t;
+            Range: free;
+            Definition: sum[ (i,j) | Treatm(i,j,t)="Fina", AreaScale/5 * m3Harv(i,j,t) * Area(i) * x(i,j) ];
+        }
+    }
+    DeclarationSection RunControls {
+        Set SurplusModelIdentifiers {
+            SubsetOf: AllConstraints;
+            Definition: {
+                data 
+                    { m3HarvTot     , m3VolTot      , HarvSawtTot   , HarvPulpwTot  , HarvGROTTot   , HarvRojgallTot, HarvestCost   , maxArea       ,
+                      minVolTot     , ConSawtTrp    , ConPulpwTrp   , ConResidTrp   , ConChipsTrp   , MaxToSm       , MaxToPm       , MaxToHp       ,
+                      GROTUsage     , RojgallUsage  , CostSawt      , CostPulpw     , CostFuelw     , ToSmTot       , ToPmTot       , ToHpTot       ,
+                      DemInStep     , DemEqSupply   , NPVRevenue    , NPVCosts      , NetSurplus    , ConSawdTrp    }
+            }
+        }
+        MathematicalProgram MaxNetSurplus {
+            Objective: NetSurplus;
+            Direction: maximize;
+            Constraints: SurplusModelIdentifiers;
+            Variables: AllVariables;
+            Type: LP;
+        }
+        Set AnalysisIdentifiers {
+            SubsetOf: AllIdentifiers;
+            Definition: data { CostSawt,  CostPulpw, CostFuelw, ToSmTot, ToPmTot, ToHpTot };
+        }
+    }
+    DeclarationSection Excel_Linkage {
+        StringParameter WorkbookName;
+        StringParameter Sheet;
+    }
+    Procedure MainInitialization;
+    Procedure ReadData {
+        Body: {
+            !-- Read Heureka material - df sets Plots, Progs, Periods
+            empty Plots, Progs, Periods ;
+            
+            read from file "SweForHeurekaConsta.txt" ;
+            read from file "SweForHeurekaAltern.txt" ;
+            read from file "SweForHeurekaPeriod.txt" ;
+            
+            !-- Reading from Excel file
+            empty Sawm, Pulpm, Heatp ;
+            empty DistPlotSm, DistPlotPm, DistPlotHp, DistSmPm, DistHpHp ;
+            empty CapacitySm, CapacityPm, CapacityHp ;
+            
+            ! Df branch sets and get distances
+            BLOCK
+            WorkbookName := "Avstand.xlsx";
+            
+            ! Sawmills
+            Spreadsheet::SetActiveSheet( WorkbookName, "41_sv_koord" );
+            Spreadsheet::RetrieveSet( Workbook: WorkbookName, Set: Sawm, Range: "b1:ap1" ) ;
+            Spreadsheet::SetActiveSheet( WorkbookName, "AvstTab2012" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: DistPlotSm(i,w), Range: "d3:ar6004" ) ;
+            
+            ! Pulpmills
+            Spreadsheet::SetActiveSheet( WorkbookName, "mb_koord" );
+            Spreadsheet::RetrieveSet( Workbook: WorkbookName, Set: Pulpm, Range: "b1:aj1" ) ;
+            Spreadsheet::SetActiveSheet( WorkbookName, "AvstTab2012" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: DistPlotPm(i,u), Range: "as3:ca6004" ) ;
+            
+            ! Heatingplants
+            Spreadsheet::SetActiveSheet( WorkbookName, "vm_koord" );
+            Spreadsheet::RetrieveSet( Workbook: WorkbookName, Set: Heatp, Range: "b1:bl1" ) ;
+            Spreadsheet::SetActiveSheet( WorkbookName, "AvstTab2012" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: DistPlotHp(i,h), Range: "cb3:el6004" ) ;
+            
+            ! From sawmill to pulpmill
+            Spreadsheet::SetActiveSheet( WorkbookName, "AvstSmPm" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: DistSmPm(w,u), Range: "b3:aj43" ) ;
+            
+            ! From sawmill to Hp
+            Spreadsheet::SetActiveSheet( WorkbookName, "AvstSmHp" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: DistSmHp(w,h), Range: "b3:bl43" ) ;
+            
+            ! From Hp to Hp
+            Spreadsheet::SetActiveSheet( WorkbookName, "AvstHpHp" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: DistHpHp(h,h2), Range: "b2:bl64" ) ;
+            
+            
+            ENDBLOCK;
+            
+            BLOCK
+            WorkbookName := "CapacityQuantPrice.xlsx";
+            
+            ! Kapaciteter
+            Spreadsheet::SetActiveSheet( WorkbookName, "CapSm" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: CapacitySm(t,w), Range: "b4:ap23" ) ;
+            Spreadsheet::SetActiveSheet( WorkbookName, "CapPm" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: CapacityPm(t,u), Range: "b4:aj23" ) ;
+            Spreadsheet::SetActiveSheet( WorkbookName, "CapHp" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: CapacityHp(t,h), Range: "b4:bl23" ) ;
+            
+            ! Marknadspunkter q0/p0
+            Spreadsheet::SetActiveSheet( WorkbookName, "Marketeq" );
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: q0(t,BranchSm), Range: "b3:b22" ) ;
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: p0(t,BranchSm), Range: "c3:c22" ) ;
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: q0(t,BranchPm), Range: "d3:d22" ) ;
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: p0(t,BranchPm), Range: "e3:e22" ) ;
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: q0(t,BranchHp), Range: "f3:f22" ) ;
+            Spreadsheet::RetrieveParameter( Workbook: WorkbookName, Parameter: p0(t,BranchHp), Range: "g3:g22" ) ;
+            
+            ENDBLOCK ;
+        }
+    }
+    Procedure RunAnalysis {
+        Body: {
+            !-- Använd denna för att analysera vissa frågor
+            !-- Check att man inte har för lite kapacitet för att kunna nå p0/q0
+            for (t,b) do 
+              if pMin(t,b) > p0(t,b) then
+                halt with "Beräkning av att pMin är störr än p0 (vilket beror på kapcitet i bransch)"
+              endif ;
+            endfor ;
+            
+            MaxTrpDist(BranchSm):=400000; MaxTrpDist(BranchPm):=400000; MaxTrpDist(BranchHp):=500000; 
+            solve MaxNetSurplus ;
+            
+            CaseFileSave("data\\Test40milSmHp_LS.data",AllIdentifiers ) ;
+            
+            !MaxTrpDist(BranchSm):=400000; MaxTrpDist(BranchPm):=400000; MaxTrpDist(BranchHp):=99900000; 
+            !solve MaxNetSurplus ;
+            !CaseFileSave("data\\Test40mil.data",AllIdentifiers ) ;
+        }
+    }
+    Procedure MainExecution {
+        Body: solve MaxNetSurplus;
+    }
+    Procedure MainTermination {
+        Body: {
+            return DataManagementExit();
+        }
+    }
+}

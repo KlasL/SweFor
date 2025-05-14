@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2021-10-31 04:05:39">
+	<Location top="30" left="30" bottom="540" right="600" />
+	<PageEditSize Type="Inherited">
+		<Size Width="600" Height="540" />
+	</PageEditSize>
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<Title>"[Data Page] q"</Title>
+	<ResizeData>
+		<MainArea Line="FixedFromRight" Value="81">
+			<LeftArea Line="FixedFromTop" Value="45" />
+			<RightArea Line="FixedFromTop" Value="35">
+				<BottomArea Line="FixedFromBottom" Value="106" />
+			</RightArea>
+		</MainArea>
+	</ResizeData>
+	<Background Inherited="true" />
+	<PageObject Type="Button">
+		<Location top="10" left="520" bottom="35" right="590" />
+		<TabOrder>1</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Text</ButtonType>
+		<Title>"Close"</Title>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="ClosePage" />
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="435" left="520" bottom="460" right="590" />
+		<TabOrder>2</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Text</ButtonType>
+		<Title>"Undo"</Title>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="MenuCommand">
+				<Command>Edit-Undo Last</Command>
+			</Action>
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="470" left="520" bottom="495" right="555" />
+		<TabOrder>3</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Bitmap</ButtonType>
+		<BitmapFile LiteralFileName="true">"&lt;prj&gt;:bitmaps\construct.png"</BitmapFile>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="DataPageSpecific">
+				<DoWhat>Reopen</DoWhat>
+			</Action>
+			<Action Type="ClosePage" />
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="470" left="555" bottom="495" right="590" />
+		<TabOrder>4</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Bitmap</ButtonType>
+		<BitmapFile LiteralFileName="true">"&lt;prj&gt;:bitmaps\totree.png"</BitmapFile>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="DataPageSpecific">
+				<DoWhat>LocationInTree</DoWhat>
+			</Action>
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="505" left="520" bottom="530" right="555" />
+		<TabOrder>5</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Bitmap</ButtonType>
+		<BitmapFile LiteralFileName="true">"&lt;prj&gt;:bitmaps\previous.png"</BitmapFile>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="DataPageSpecific">
+				<DoWhat>GotoPreviousSymbol</DoWhat>
+			</Action>
+			<Action Type="ClosePage" />
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="505" left="555" bottom="530" right="590" />
+		<TabOrder>6</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Bitmap</ButtonType>
+		<BitmapFile LiteralFileName="true">"&lt;prj&gt;:bitmaps\next.png"</BitmapFile>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="DataPageSpecific">
+				<DoWhat>GotoNextSymbol</DoWhat>
+			</Action>
+			<Action Type="ClosePage" />
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Floating Index">
+		<Location top="10" left="10" bottom="35" right="110" />
+		<TabOrder>7</TabOrder>
+		<ObjectUUID>AA0B9E75-F681-4B97-B64F-5A61D75234A0</ObjectUUID>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" />
+		<Circular>true</Circular>
+		<ClickShowsList>true</ClickShowsList>
+		<BackgroundColor RGB="#ffffff" />
+		<Identifier>s</Identifier>
+	</PageObject>
+	<PageObject Type="Floating Index">
+		<Location top="10" left="120" bottom="35" right="220" />
+		<TabOrder>8</TabOrder>
+		<ObjectUUID>46B27E58-53D2-4C8F-8510-73AD4BBF001E</ObjectUUID>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" />
+		<Circular>true</Circular>
+		<ClickShowsList>true</ClickShowsList>
+		<BackgroundColor RGB="#ffffff" />
+		<Identifier>fut</Identifier>
+	</PageObject>
+	<PageObject Type="Floating Index">
+		<Location top="10" left="230" bottom="35" right="330" />
+		<TabOrder>9</TabOrder>
+		<ObjectUUID>98351E98-E218-4D98-BD95-7593BA654113</ObjectUUID>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" />
+		<Circular>true</Circular>
+		<ClickShowsList>true</ClickShowsList>
+		<BackgroundColor RGB="#ffffff" />
+		<Identifier>t</Identifier>
+	</PageObject>
+	<PageObject Type="Scalar">
+		<Location top="10" left="340" bottom="35" right="440" />
+		<TabOrder>10</TabOrder>
+		<PopupMenu Default="true" DefaultPopupId="200" />
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" />
+		<BackgroundColor RGB="#ffffff" />
+		<Layout>Value</Layout>
+		<SeparatorSign>=</SeparatorSign>
+		<ExplicitIdentifier>
+			<Identifier>q( '1', 'PaChem', '3' )</Identifier>
+			<IndexLinkage>[AA0B9E75-F681-4B97-B64F-5A61D75234A0,46B27E58-53D2-4C8F-8510-73AD4BBF001E,98351E98-E218-4D98-BD95-7593BA654113]</IndexLinkage>
+			<NumberFormat Width="8" Decimals="0" Scientific="IfTooSmallorLarge" ShowDefaults="true" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Composite Table">
+		<Location top="45" left="10" bottom="530" right="510" />
+		<TabOrder>11</TabOrder>
+		<PopupMenu Default="true" DefaultPopupId="200" />
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" />
+		<BackgroundColor RGB="#ffffff" />
+		<Domain>
+			<Identifier>q( s, fut, t )</Identifier>
+			<IndexLinkage>[AA0B9E75-F681-4B97-B64F-5A61D75234A0,46B27E58-53D2-4C8F-8510-73AD4BBF001E,98351E98-E218-4D98-BD95-7593BA654113]</IndexLinkage>
+			<Index Name="s" />
+			<Index Name="fut" />
+			<Index Name="t" />
+			<AllowRowAdd>true</AllowRowAdd>
+			<AllowRowDelete>true</AllowRowDelete>
+			<AllowRowModify>true</AllowRowModify>
+		</Domain>
+		<ExplicitIdentifier>
+			<Identifier>q( s, fut, t )</Identifier>
+			<NumberFormat Width="9" Decimals="0" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>q</Symbol>
+			<Symbol>t</Symbol>
+			<Symbol>fut</Symbol>
+			<Symbol>s</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

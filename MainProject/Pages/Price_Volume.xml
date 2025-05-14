@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2021-03-04 05:04:16">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Curve">
+		<Location top="12" left="24" bottom="216" right="474" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'Sawnwd', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'Sawnwd', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'Sawnwd', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="234" left="912" bottom="420" right="1338" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'PaChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'PaChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'PaChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="240" left="474" bottom="414" right="900" />
+		<TabOrder>4</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'OtChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'OtChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'OtChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="426" left="462" bottom="606" right="888" />
+		<TabOrder>6</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'OtMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'OtMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'OtMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="438" left="924" bottom="612" right="1290" />
+		<TabOrder>8</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'NwMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'NwMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'NwMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="240" left="30" bottom="414" right="456" />
+		<TabOrder>3</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'PuChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'PuChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'PuChem', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="426" left="18" bottom="606" right="444" />
+		<TabOrder>5</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'PuMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'PuMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'PuMech', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="18" left="510" bottom="192" right="876" />
+		<TabOrder>7</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( 'PuDiss', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMax( 'PuDiss', t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>pMin( 'PuDiss', t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>pMax</Symbol>
+			<Symbol>pMin</Symbol>
+			<Symbol>FinalPrices</Symbol>
+			<Symbol>t</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

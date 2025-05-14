@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2018-12-02 17:06:30">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Table">
+		<Location top="42" left="54" bottom="402" right="1320" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>TotFactorOutput( t, fut )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="10" Decimals="0" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>q0( t, fut )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="10" Decimals="0" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="426" left="42" bottom="744" right="552" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>TotFactorOutput( t, 'sawnwd' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>TotFactorOutput( t, 'pulp__' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>TotFactorOutput( t, 'energy' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>q0( t, 'sawnwd' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>q0( t, 'pulp__' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>q0( t, 'energy' )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="432" left="636" bottom="726" right="1206" />
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( t, 'sawnwd' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( t, 'pulp__' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>FinalPrices( t, 'energy' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>p0( t, 'sawnwd' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>p0( t, 'pulp__' )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>p0( t, 'energy' )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>p0</Symbol>
+			<Symbol>q0</Symbol>
+			<Symbol>FinalPrices</Symbol>
+			<Symbol>TotFactorOutput</Symbol>
+			<Symbol>t</Symbol>
+			<Symbol>fut</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

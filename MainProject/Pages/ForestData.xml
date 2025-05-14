@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2019-06-09 22:16:35">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Table">
+		<Location top="60" left="60" bottom="450" right="666" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>HarvM3Tot( t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="10" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>m3VolTotThin( t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="9" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>m3VolTotFina( t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="10" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ThinningPercent( t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="1" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>StandingVol( t )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="14" Decimals="0" ThousandSeparator="true" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="66" left="714" bottom="462" right="1320" />
+		<TabOrder>3</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>HarvM3Tot( t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>m3VolTotFina( t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>m3VolTotPCT( t )</Identifier>
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>m3VolTotThin( t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<PageObject Type="Curve">
+		<Location top="552" left="708" bottom="768" right="1326" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<ColorScheme Number="0" />
+		<Title>true</Title>
+		<Legend>true</Legend>
+		<Y-Labels>true</Y-Labels>
+		<X-Labels>true</X-Labels>
+		<StatusLine>true</StatusLine>
+		<ExplicitIdentifier>
+			<Identifier>StandingVol( t )</Identifier>
+		</ExplicitIdentifier>
+		<DrawLines>true</DrawLines>
+		<MarkPoints>true</MarkPoints>
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>HarvM3Tot</Symbol>
+			<Symbol>m3VolTotThin</Symbol>
+			<Symbol>m3VolTotFina</Symbol>
+			<Symbol>m3VolTotPCT</Symbol>
+			<Symbol>ThinningPercent</Symbol>
+			<Symbol>StandingVol</Symbol>
+			<Symbol>t</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>
