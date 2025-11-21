@@ -1,0 +1,9 @@
+<AimmsCSVMapping>
+    <RowMapping name="table1">
+        <ColumnMapping name="Factor" binds-to="Factor"/>
+        <ColumnMapping name="Plot" binds-to="Plot"/>
+        <ColumnMapping name="Prog" binds-to="Prog"/>
+        <ColumnMapping name="Periods" binds-to="Periods"/>
+       <ColumnMapping name="PlotOutput" maps-to="PlotOutput(Factor,Plot,Prog,Periods)"/>
+	</RowMapping>
+</AimmsCSVMapping>

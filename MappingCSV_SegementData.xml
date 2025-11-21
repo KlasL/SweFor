@@ -1,0 +1,15 @@
+<AimmsCSVMapping>
+    <RowMapping name="table4">
+		<ColumnMapping name="Stand" binds-to="Plot"/>
+		   <ColumnMapping name="Area" maps-to="Area(Plot)"/>
+		   <ColumnMapping name="Natvard" maps-to="Natvard(Plot)"/>
+		   <ColumnMapping name="Peat" maps-to="Peat(Plot)"/>
+		   <ColumnMapping name="Fjanara" maps-to="Fjanara(Plot)"/>
+		   <ColumnMapping name="SoilMoist" maps-to="SoilMoist(Plot)"/>
+		   <ColumnMapping name="Altitude" maps-to="Altitude(Plot)"/>
+		   <ColumnMapping name="Latitude" maps-to="Latitude(Plot)"/>
+		   <ColumnMapping name="County" maps-to="CountyI(Plot)"/>
+		   <ColumnMapping name="mToRoad" maps-to="mToRoad(Plot)"/>
+		   <ColumnMapping name="TerrTrpStatus" maps-to="TerrTrpStatus(Plot)"/>
+	</RowMapping>
+</AimmsCSVMapping>

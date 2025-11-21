@@ -1,0 +1,7 @@
+<AimmsCSVMapping>
+    <RowMapping name="table3">
+        <ColumnMapping name="Location1" binds-to="l1"/>
+        <ColumnMapping name="Location2" binds-to="l2"/>
+       <ColumnMapping name="KmLocToLoc" maps-to="KmLocToLoc(l1,l2)"/>
+	</RowMapping>
+</AimmsCSVMapping>

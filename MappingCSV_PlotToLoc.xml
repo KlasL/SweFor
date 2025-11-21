@@ -1,0 +1,7 @@
+<AimmsCSVMapping>
+    <RowMapping name="table3">
+        <ColumnMapping name="Plot" binds-to="Plot"/>
+        <ColumnMapping name="Location" binds-to="Location"/>
+        <ColumnMapping name="KmPlotToLoc" maps-to="KmPlotToLoc(Plot,Location)"/>
+	</RowMapping>
+</AimmsCSVMapping>

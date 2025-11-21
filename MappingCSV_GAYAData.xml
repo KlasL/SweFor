@@ -1,0 +1,28 @@
+<AimmsCSVMapping>
+    <RowMapping name="table2">
+		<ColumnMapping name="Plot" binds-to="Plot"/>
+		<ColumnMapping name="Prog" binds-to="Prog"/>
+		<ColumnMapping name="Periods" binds-to="Periods"/>
+		   <ColumnMapping name="NRatg" maps-to="NRatg(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="Treatm" maps-to="Treatm(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="SCost" maps-to="SCost(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="HCost" maps-to="HCost(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="FCost" maps-to="FCost(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="RCost" maps-to="RCost(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="Age" maps-to="Age(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="m3Vol" maps-to="m3Vol(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="m3Pin" maps-to="m3Pin(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="m3Spr" maps-to="m3Spr(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="m3Dec" maps-to="m3Dec(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="Hgv" maps-to="Hgv(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="Dgv" maps-to="Dgv(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="Stems" maps-to="Stems(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="LSA" maps-to="LSA(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="m3Harv" maps-to="m3Harv(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="TSbiom" maps-to="TSbiom(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="TScoar" maps-to="TScoar(Plot,Prog,Periods)"/>
+		   <ColumnMapping name="TSfine" maps-to="TSfine(Plot,Prog,Periods)"/>
+			<ColumnMapping name="M3skMort" maps-to="M3skMort(Plot,Prog,Periods)"/>
+			<ColumnMapping name="SIS" maps-to="SIS(Plot,Prog,Periods)"/>
+	</RowMapping>
+</AimmsCSVMapping>
