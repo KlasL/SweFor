@@ -2408,14 +2408,14 @@ Model Main_SweFor {
 			axll::ReadList(IdentifierReference: MinCapacityQuantity, 	RowHeaderRange: "A2:A30", DataRange: "g2:g30", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
 			! Trp
 			axll::SelectSheet(SheetName : "Trp" );
-			axll::ReadList(IdentifierReference: MaxTrpDistance, 	RowHeaderRange: "b3:b30", DataRange: "d3:d30", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: FixTrpCost, 	RowHeaderRange: "b3:b30", DataRange: "e3:e30", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: VarTrpCost, 	RowHeaderRange: "b3:b30", DataRange: "f3:f30", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
+			axll::ReadList(IdentifierReference: MaxTrpDistance, 	RowHeaderRange: "b3:b40", DataRange: "d3:d40", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
+			axll::ReadList(IdentifierReference: FixTrpCost, 	RowHeaderRange: "b3:b40", DataRange: "e3:e40", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
+			axll::ReadList(IdentifierReference: VarTrpCost, 	RowHeaderRange: "b3:b40", DataRange: "f3:f40", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
 			axll::ReadTable(
 			        IdentifierReference    :  MaxNoTrpLinks ,
-			        RowHeaderRange         : "b3:b17" ,
+			        RowHeaderRange         : "b3:b40" ,
 			        ColumnHeaderRange      : "g2:ag2" ,
-			        DataRange              : "g3:ag17",
+			        DataRange              : "g3:ag40",
 			        ModeForUnknownElements :  0,
 			        MergeWithExistingData  :  0);
 			
@@ -2439,35 +2439,35 @@ Model Main_SweFor {
 			FixedMix(ft,fin) := max[ fut, FixedMixTmp(ft,fin,fut) ];
 			
 			! Market points
-			axll::SelectSheet(SheetName : "SKA22Plus" );
+			axll::SelectSheet(SheetName : "SKA22" );
 			!axll::ReadSet(SetReference: Periods, SetRange: "b1:z1", ExtendSuperSets:  1, MergeWithExistingElements :  0, SkipEmptyCells:  0);
 			axll::ReadList(IdentifierReference: PeriodLength, RowHeaderRange: "b1:z1", DataRange: "b2:z2", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
 			axll::ReadTable(
 			        IdentifierReference    :  p0 ,
-			        RowHeaderRange         : "A4:A25" ,
+			        RowHeaderRange         : "A4:A30" ,
 			        ColumnHeaderRange      : "B1:z1" ,
-			        DataRange              : "b4:z25",
+			        DataRange              : "b4:z30",
 			        ModeForUnknownElements :  0,
 			        MergeWithExistingData  :  0);
 			axll::ReadTable(
 			        IdentifierReference    :  q0 ,
-			        RowHeaderRange         : "a28:a49" ,
+			        RowHeaderRange         : "a30:a60" ,
 			        ColumnHeaderRange      : "B1:z1" ,
-			        DataRange              : "b28:z49",
+			        DataRange              : "b30:z60",
 			        ModeForUnknownElements :  0,
 			        MergeWithExistingData  :  0);
 			axll::ReadTable(
 			        IdentifierReference    :  pImports ,
-			        RowHeaderRange         : "A52:a72" ,
+			        RowHeaderRange         : "A60:a90" ,
 			        ColumnHeaderRange      : "B1:z1" ,
-			        DataRange              : "b52:z72",
+			        DataRange              : "b60:z90",
 			        ModeForUnknownElements :  0,
 			        MergeWithExistingData  :  0);
 			axll::ReadTable(
 			        IdentifierReference    :  MaxImports ,
-			        RowHeaderRange         : "A75:a95" ,
+			        RowHeaderRange         : "A90:a120" ,
 			        ColumnHeaderRange      : "B1:z1" ,
-			        DataRange              : "b75:z95",
+			        DataRange              : "b90:z120",
 			        ModeForUnknownElements :  0,
 			        MergeWithExistingData  :  0);
 			
@@ -2757,24 +2757,25 @@ Model Main_SweFor {
 	Procedure PreRun {
 		Body: {
 			!-- Read and save forest data
-			FileNames('Forest')     := "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS_bf12p1.txt";
-			FileNames('Factors')    := "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS_bf12p1.txt";
-			FileNames('ForestSave') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_bf12p1.data";
+			FileNames('Forest')     := "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
+			FileNames('Factors')    := "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
+			FileNames('ForestSave') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_MinTop8.data";
 			!-- Distance matrices
 			FileNames('DistancesLocToLoc') := "D:/Users/ljeraa/BioFrame/SweForData/CommonData/DistancesLocToLoc.csv";
 			FileNames('DistancesPlotToLoc'):= "D:/Users/ljeraa/BioFrame/SweForData/CommonData/DistancesPlotToLoc#2.csv";
 			!-- Read forest reltaed data
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_b12p2.data";
+			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_b18p4.data";
 			FileNames('SegmentData') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/SegmentData.csv";
 			!-- Facilities and input/output related data
 			FileNames('InputOutputData'):= "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/InputOutput#3Seydlitz.xlsx";
 			FileNames('FacilityData')   := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/SweForFacilytyData#3.xlsx";
 			!-- Output results
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Res_b12p2s15.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Ind_b12p2s15.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Saw_b12p2s15.csv";
+			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/Cement/Res_Cement.csv";
+			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Ind_MinTop8.csv";
+			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Saw_MinTop8.csv";
 			
 			!--- All data preparation including saving
+			!ReadAndSaveGAYAData;
 			ReadStandAndPlotData ;
 			statusmessage("ReadStandAndPlotData OK") ;
 			ReadIO;
@@ -2789,9 +2790,10 @@ Model Main_SweFor {
 			statusmessage('ManageTransports completed') ;
 			RunAnalysis ;
 			PutRegionResults ;
+			halt;
 			PutIndOutput;
 			PutBirchSawMillAnalysisData;
-			
+			halt;
 			!-- b12p4s15
 			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b12p4.data";
 			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b12p4s15.csv";
