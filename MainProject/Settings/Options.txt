@@ -12,6 +12,8 @@ time_limit 36000
 * GUROBI 12.0
 "GUROBI 12.0".Concurrent_method 0
 "GUROBI 12.0".Method 2
+"GUROBI 12.0".Barrier_crossover 3
+"GUROBI 12.0".Barrier_crossover_basis 1
 "GUROBI 12.0".Log_to_console 1
 * IPOPT 3.11
 * MINOS

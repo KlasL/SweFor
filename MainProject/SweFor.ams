@@ -9,7 +9,6 @@ Model Main_SweFor {
 				! fin, fut - Factors
 				! k - Counter
 				! c - scenarios
-				! o - NUTS2
 				! r - Regions
 				! y - Counties
 				! i - Plots
@@ -57,11 +56,6 @@ Model Main_SweFor {
 		Parameter PeriodLength {
 			IndexDomain: t;
 		}
-		StringParameter InputFile;
-		Parameter NoOfNFIYears {
-			Range: integer;
-			Comment: "Antal år fom 2012 (se effekt i AreaScale och x(i,j) och maxArea(i) )";
-		}
 		Parameter RNDrun {
 			InitialData: 1;
 			Comment: "Plots med RND <= RNDrun tas med ==> AreaScale = 0.95/(NoOfYearsRun*RNDrun)";
@@ -78,47 +72,11 @@ Model Main_SweFor {
 			InitialData: 1.1;
 			Comment: "Den avvikelse jmf med LSÅ som tillåts - påverkar urval i xToRun";
 		}
-		Parameter MaxLSA {
-			Definition: 2;
-		}
 		Parameter TotalForestArea {
 			Definition: {
-				23525888 ! Sweden
+				23525888 ! Sweden productive forest area
+				!28000000 ! Sweden all forest area
 				!2200000	! Lithuania
-			}
-		}
-		Set Regions {
-			SubsetOf: Integers;
-			Index: r;
-			Definition: data { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };
-		}
-		Set County {
-			SubsetOf: Integers;
-			Index: y;
-			Definition: data { 1..30 };
-		}
-		Set NUTS {
-			SubsetOf: Integers;
-			Index: o;
-		}
-		Parameter CountyToRegion {
-			IndexDomain: (y,r);
-			Range: binary;
-			Property: NoSave;
-			InitialData: {
-				data 
-				{ (  1, 1 ) : 1,  (  1, 3 ) : 1,  (  2, 1 ) : 1,  (  3, 1 ) : 1,  (  3, 3 ) : 1,  (  4, 1 ) : 1,  (  4, 5 ) : 1,
-				  (  5, 1 ) : 1,  (  5, 5 ) : 1,  (  6, 1 ) : 1,  (  6, 5 ) : 1,  (  7, 1 ) : 1,  (  7, 5 ) : 1,  (  8, 1 ) : 1,
-				  (  8, 5 ) : 1,  (  9, 1 ) : 1,  (  9, 5 ) : 1,  ( 10, 1 ) : 1,  ( 10, 5 ) : 1,  ( 11, 1 ) : 1,  ( 11, 5 ) : 1,
-				  ( 12, 1 ) : 1,  ( 12, 5 ) : 1,  ( 13, 1 ) : 1,  ( 13, 5 ) : 1,  ( 14, 1 ) : 1,  ( 14, 4 ) : 1,  ( 15, 1 ) : 1,
-				  ( 16, 1 ) : 1,  ( 17, 1 ) : 1,  ( 17, 4 ) : 1,  ( 18, 1 ) : 1,  ( 18, 4 ) : 1,  ( 19, 1 ) : 1,  ( 19, 3 ) : 1,
-				  ( 20, 1 ) : 1,  ( 20, 3 ) : 1,  ( 21, 1 ) : 1,  ( 21, 3 ) : 1,  ( 22, 1 ) : 1,  ( 22, 2 ) : 1,  ( 23, 1 ) : 1,
-				  ( 23, 2 ) : 1,  ( 24, 1 ) : 1,  ( 24, 2 ) : 1,  ( 25, 1 ) : 1,  ( 25, 2 ) : 1 }
-			}
-			Comment: {
-				"Stockholms – 01; Uppsala – 03; Södermanlands – 04; Östergötlands – 05; Jönköpings – 06; Kronobergs – 07; Kalmar – 08; 
-				Gotlands – 09; Blekinge – 10; Skåne – 12; Hallands – 13; Västra Götalands – 14; Värmlands – 17; Örebro – 18;
-				Västmanlands – 19; Dalarnas – 20;Gävleborgs – 21; Västernorrlands – 22; Jämtlands – 23; Västerbottens – 24; Norrbottens - 25"
 			}
 		}
 		Set Counter {
@@ -132,30 +90,36 @@ Model Main_SweFor {
 		Parameter Iter2 {
 			Range: integer;
 		}
+		Parameter ParTmp;
+		StringParameter CharTmp;
 		Parameter PeriodResult {
 			IndexDomain: t;
 		}
 		StringParameter RunMode {
-			Definition: {
-				'all'
+			InitialData: {
+				"all"
 				!'sup'
 			}
 		}
-		Set Biotopes {
-			SubsetOf: Integers;
-			Index: tc;
-			Definition: data{ 1..6 };
-		}
-		StringParameter BiotopNames {
-			IndexDomain: tc;
-			Definition: data { 1 : "Tall",  2 : "Gran",  3 : "Babl",  4 : "Blnd",  5 : "Lovs",  6 : "Adel" };
-		}
-		ElementParameter CurrTC {
-			Range: Biotopes;
+		StringParameter ForestMode {
+			InitialData: {
+				"Stand"
+				!'NFI'
+			}
 		}
 		Parameter ObjectiveValue;
-		Parameter MaxRcost {
-			InitialData: 300;
+	}
+	DeclarationSection ParcelData {
+		Comment: "Parcel encompasses a region with one or more plots (aka stands or segments)";
+		Set Parcel {
+			Index: b;
+		}
+		Set PaToSt {
+			IndexDomain: b;
+			SubsetOf: Plot;
+		}
+		Parameter ParcelArea {
+			IndexDomain: b;
 		}
 	}
 	DeclarationSection FactorsData {
@@ -236,26 +200,8 @@ Model Main_SweFor {
 			IndexDomain: (ft,fin);
 		}
 	}
-	DeclarationSection ParcelData {
-		Set Parcel {
-			Index: b;
-		}
-		Set ParcelToRun {
-			SubsetOf: Parcel;
-			Index: ba;
-		}
-		Set S2E {
-			IndexDomain: b;
-			SubsetOf: Plot;
-		}
-		Parameter FastArea {
-			IndexDomain: b;
-		}
-		Parameter ParcelArea {
-			IndexDomain: b;
-		}
-	}
 	DeclarationSection PlotData {
+		Comment: "The basic forest entity is plot (aka stand or segment)";
 		Set Plot {
 			Index: i;
 		}
@@ -263,40 +209,15 @@ Model Main_SweFor {
 			SubsetOf: Plot;
 			Index: ia;
 		}
-		StringParameter E2Se {
+		StringParameter StToPa {
 			IndexDomain: i;
 		}
-		ElementParameter E2S {
+		ElementParameter St2Pa {
 			IndexDomain: i;
 			Range: Parcel;
 		}
 		StringParameter PlotToRunx {
 			IndexDomain: i;
-		}
-		ElementParameter CurrPlotsInCounties {
-			IndexDomain: i;
-			Range: County;
-			Definition: CountyI(i);
-		}
-		Set PlotsInCounties {
-			IndexDomain: y;
-			SubsetOf: Plot;
-		}
-		Set PlotsInRegions {
-			IndexDomain: r;
-			SubsetOf: Plot;
-			Definition: {
-				!{ (i) | i in PlotsInCounties(1) } 
-				PlotsInCounties(14) + PlotsInCounties(13) 
-				!union[ i | i in PlotsInCounties(10)
-			}
-		}
-		Set PlotsInNUTS {
-			IndexDomain: o;
-			SubsetOf: Plot;
-			Definition: {
-				{ i | Plot2NUTS(i,o) }
-			}
 		}
 		Set Prog {
 			Index: j, j1;
@@ -326,7 +247,7 @@ Model Main_SweFor {
 		StringParameter TerrTrpStatus {
 			IndexDomain: i;
 		}
-		StringParameter Natvard {
+		StringParameter NatureProt {
 			IndexDomain: i;
 		}
 		Parameter PlotsToCounties {
@@ -341,21 +262,14 @@ Model Main_SweFor {
 				endif
 			}
 		}
-		Parameter Plot2NUTS {
-			IndexDomain: (i,o);
-			Definition: {
-				if NUTS2I(i) = o then
-					1
-				else
-					0
-				endif
-			}
-		}
 		Parameter AreaScale;
 		Parameter Scale {
 			IndexDomain: i;
 		}
 		Parameter RND {
+			IndexDomain: i;
+		}
+		Parameter NVKprob {
 			IndexDomain: i;
 		}
 		Parameter Area {
@@ -393,10 +307,6 @@ Model Main_SweFor {
 		}
 		Parameter PartOfSweden {
 			IndexDomain: i;
-		}
-		Parameter NUTS2I {
-			IndexDomain: i;
-			Range: free;
 		}
 		StringParameter ClimatC {
 			IndexDomain: i;
@@ -443,7 +353,7 @@ Model Main_SweFor {
 		Parameter mToRoad {
 			IndexDomain: i;
 		}
-		Parameter Fjanara {
+		Parameter Alpine {
 			IndexDomain: i;
 		}
 		Parameter ProgPar {
@@ -512,7 +422,7 @@ Model Main_SweFor {
 			Definition: {
 				data 
 				    { Periods,Plot, Prog, Factor,
-				     NRatg,Treatm,LSA,Age,Hgv,Dgv,Stems,m3Vol,m3Pin,m3Spr,m3Dec,
+				     NRatg,Treatm,LSA,SIS,Age,Hgv,Dgv,Stems,m3Vol,m3Pin,m3Spr,m3Dec,
 				     m3Harv,Scost,Hcost,Fcost,Rcost,
 				     M3skMort,TSbiom,TScoar,TSfine,PlotOutput }
 			}
@@ -610,7 +520,7 @@ Model Main_SweFor {
 					elseif Treatm(ia,j,t) = 'Th' then
 						ExtractionRate(fin)
 					endif 
-				elseif CommodityType(fin) = 'R' and Treatm(ia,j,t) = 'FF' and Peat(ia)="0" and SoilMoist(ia) <= 3 and Rcost(ia,j,t) <= maxRcost then
+				elseif CommodityType(fin) = 'R' and Treatm(ia,j,t) = 'FF' and Peat(ia)="0" and SoilMoist(ia) <= 3 then
 					ExtractionRate(fin) * ( 1 - RetentionRate )
 				!elseif CommodityType(fin) = 'R' and TCc(Treat0(ia,j,t)) = 'Th' and Peat(ia)="0" and SoilMoi(ia) <= 3 and Rcost(ia,j,t) <= maxRcost then
 				!	ExtractionRate(fin)
@@ -648,13 +558,6 @@ Model Main_SweFor {
 			SubsetOf: Location;
 			Definition: {
 				{ l | LocationsToCounties(l,y) }
-			}
-		}
-		Set LocationInNUTS {
-			IndexDomain: o;
-			SubsetOf: Location;
-			Definition: {
-				{ l | Location2NUTS(l,o) }
 			}
 		}
 		Set BestTrpToFacA {
@@ -719,12 +622,6 @@ Model Main_SweFor {
 					0
 				endif
 			}
-		}
-		Parameter NUTS2L {
-			IndexDomain: l;
-		}
-		Parameter Location2NUTS {
-			IndexDomain: (l,o);
 		}
 		Parameter CapacityInLoc {
 			IndexDomain: (f,l);
@@ -1204,7 +1101,6 @@ Model Main_SweFor {
 		}
 		Constraint ConImports {
 			IndexDomain: (fin,t) | ExtractionRate(fin);
-			Property: ShadowPrice;
 			Definition: Import(fin,t) <= MaxImports(fin,t);
 		}
 		Constraint DemInStep {
@@ -1216,56 +1112,6 @@ Model Main_SweFor {
 			Definition: TotalSupply(fut,t) = sum[ s, SupplToMarket(s,fut,t) ];
 		}
 	}
-	DeclarationSection ParticularProblemModels {
-		Variable TotVolHarvest {
-			IndexDomain: t;
-			Range: nonnegative;
-			Definition: {
-				sum[ (ia,j), 
-					Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter ForestCValuePerTonC {
-			Text: "Valule of stock increase of one ton C";
-			InitialData: 0;
-		}
-		Parameter ForestCValuePeriods;
-		Parameter ForestCvalue {
-			IndexDomain: (i,j);
-			Definition: {
-				if 	ForestCValuePeriods and
-					sum[ t | t <= ForestCValuePeriods, m3Harv(i,j,t) ] = 0 and
-					( TSbiom(i,j,ForestCValuePeriods+1) - TSbiom(i,j,1) ) > 0 and 
-					(m3Pin(i,j,1) + m3Spr(i,j,1)) > 0.5*m3Vol(i,j,1) and 
-				!	Age(i,j,1) >= LSA(i,j,1) + 25 - 5*ForestCValuePeriods and Age(i,j,1) < LSA(i,j,1) + 25 and
-				!	Age(i,j,1) >= LSA(i,j,1) and
-					Age(i,j,1) > LSA(i,j,1) + 25 - 5*ForestCValuePeriods 
-				then
-					( TSbiom(i,j,ForestCValuePeriods+1) - TSbiom(i,j,1) ) * CsharePertTS * ForestCValuePerTonC / PeriodLength(FirstPeriod)
-				else
-					0
-				endif;
-			}
-		}
-		Parameter CValue {
-			Definition: sum[ (ia,j) | 	OwnTyp(ia) = 'Private', ForestCValue(ia,j) * Scale(ia) * x(ia,j) ];
-		}
-		Variable CValuePerT {
-			IndexDomain: t |t < Lastperiod;
-			Range: free;
-			Definition: ForestCValuePerTonC * DiffC(t) /PeriodLength(t);
-		}
-		Parameter SetAsideValuePerHa {
-			InitialData: 0;
-		}
-		Variable SetAsideValue {
-			Range: free;
-			Definition: {
-				sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 0 and count( t | t <= 6, Treatm(ia,j,t) <> 'NM' ) = 0 and SetAsideIndex(ia),  
-					SetAsideValuePerHa * Scale(ia) * x(ia,j) ]  / ( PeriodLength(1) * max[ ia, SetAsideIndex(ia) ] )
-			}
-		}
-	}
 	DeclarationSection Problem {
 		Variable aN {
 			IndexDomain: (ia,t);
@@ -1275,9 +1121,12 @@ Model Main_SweFor {
 			IndexDomain: (ia,t);
 			Range: [0, 1];
 		}
+		Parameter ir {
+			InitialData: 0.03;
+		}
 		Parameter df {
 			IndexDomain: t;
-			Definition: exp(-0.03*(sum[ t1 | t1 <= t, PeriodLength(t) ] - PeriodLength(FirstPeriod)/2 ) );
+			Definition: exp(-ir*(sum[ t1 | t1 <= t, PeriodLength(t) ] - PeriodLength(FirstPeriod)/2 ) );
 		}
 		Parameter AmenityValuePerM3 {
 			InitialData: 4;
@@ -1319,22 +1168,13 @@ Model Main_SweFor {
 			IndexDomain: t;
 			Text: "Parameters: SEK / m3 - age ½ value (LSA(ia))";
 			Definition: {
-				sum[ (ia,j) | NUTS2I(ia) >= 30 and j in xToRun(ia) and OwnTyp(ia)="Private",  
+				sum[ (ia,j) | CountyI(ia) >= 20 and j in xToRun(ia) and OwnTyp(ia)="Private",  
 				AmenityValuePerM3 * PeriodLength(t) / (1+exp(-0.1*(age(ia,j,t)-100.))) * 
 				m3Vol(ia,j,t) * Scale(ia) * x(ia,j)  / PeriodLength(t) ]
 				+
-				sum[ (ia,j) | NUTS2I(ia) < 30 and j in xToRun(ia) and OwnTyp(ia)="Private",  
+				sum[ (ia,j) | CountyI(ia) < 20 and j in xToRun(ia) and OwnTyp(ia)="Private",  
 				AmenityValuePerM3 * PeriodLength(t) / (1+exp(-0.1*(age(ia,j,t)-80.))) * 
 				m3Vol(ia,j,t) * Scale(ia) * x(ia,j)  / PeriodLength(t) ];
-				
-				/*+
-				sum[ (ia,j) | j in xToRun(ia) and OwnTyp(ia)="Private",  
-				AmenityValuePerM3 * PeriodLength(t) / (1+exp(-0.05*(age(ia,j,t)-120.))) * 
-				m3Vol(ia,j,t) * Scale(ia) * x(ia,j)  / PeriodLength(t) ]
-				
-				! AmenityValuePerM3 * PeriodLength(t) / (1+exp(-0.05*(age(ia,j,t)-LSA(ia)))) * 
-					NUTS2I(ia) >= 30 and Age(ia,j,t) >= 140 or	
-									NUTS2I(ia) < 30 and Age(ia,j,t) >= 120 )*/
 			}
 		}
 		Variable EndingValue {
@@ -1349,7 +1189,7 @@ Model Main_SweFor {
 				+
 				AmenityPerT(LastPeriod)
 				)
-				* exp(-0.03*5)/(0.03*5)
+				* exp(-ir*5)/(ir*5)
 			}
 		}
 		Variable ObjFunc {
@@ -1357,7 +1197,6 @@ Model Main_SweFor {
 			Definition: {
 				sum[ t, df(t) *
 				(
-				!TotVolHarvest(t) * 1000
 				RevenuePerT(t)
 				-
 				CostsPerT(t)
@@ -1365,11 +1204,7 @@ Model Main_SweFor {
 				TradePerT(t)
 				+
 				AmenityPerT(t)
-				!+
-				!CValuePerT(t)
 				) ]
-				!+
-				!df(FirstPeriod) * SetAsideValue
 				!+
 				!df(LastPeriod) * EndingValue
 			}
@@ -1451,11 +1286,11 @@ Model Main_SweFor {
 				    	TotalSupply, DemInStep, DemEqSupply, LastPeriodSupply,
 				    	HarvestCost, TrpCost, FacilityCost, CapacityCost, 
 				    	RevenuePerT, RevenuePerTaFut, CostsPerT, TradePerT, AmenityPerT, EndingValue,
+				 ! Technical - always there
 				    	Test_AreaEq1, Test_AreaFF
-				      }
+				    }
 				/*
 				data {      
-				      	TotVolHarvest,
 				    	Test_AreaEq1, Test_AreaFF
 				   	 }
 				*/
@@ -1547,799 +1382,6 @@ Model Main_SweFor {
 			}
 		}
 	}
-	DeclarationSection AnalysisParam {
-		Parameter TotCapacity {
-			IndexDomain: (t,ft);
-			Definition: sum[ fa | ft = CurrFT(fa), Capacity(fa,t) ];
-		}
-		Parameter TotMaintenance {
-			IndexDomain: (t,ft);
-			Definition: sum[ f |  ft = CurrFT(f), Investment(f,t) ];
-		}
-		Parameter TotInvestment {
-			IndexDomain: (t,ft);
-			Definition: sum[ fa | CurrFT(fa) = ft, Investment(fa,t) ];
-		}
-		Parameter TotTrptDistFactor {
-			IndexDomain: (fut,t);
-			Definition: {
-				!if( sum[ (i,f), PlotToFacility(fut,i,f,t) * KmPlotToLoc(i,l) ] 
-				!+  sum[ (f1,f2), FacilityToFacility(fut,f1,f2,t) * KmLocToLoc(f1,f2) ] ) / 1000 ;
-			}
-		}
-		Parameter AvgTrptDistSawt {
-			IndexDomain: (fut,t);
-			Definition: {
-				!( TotTrptDistFactor(fut,t) / ( TotFactorOutput(fut,t) + 1 ) )
-			}
-		}
-		Parameter FinalPrices {
-			IndexDomain: (fut,t)| q0(fut,t);
-			Definition: min[ s | SupplToMarket(s,fut,t) > 0, p(s,fut,t) ];
-		}
-		Parameter HarvM3Tot {
-			IndexDomain: t;
-			Range: free;
-			Definition: sum[ (ia,j) | j in xToRun(ia), Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t);
-		}
-		Parameter Trpm3fubTot {
-			IndexDomain: t;
-			Definition: {
-				sum[ (fin,ia,j) | CommodityType(fin) = 'R', 
-				Scale(ia) * Extraction(fin,ia,j,t) * PlotOutput(fin,ia,j,t) / PeriodLength(t) * x(ia,j) ]
-			}
-		}
-		Parameter TotAtRoadside {
-			IndexDomain: (fin,t);
-			Range: free;
-			Definition: sum[ (ia,j) | j in xToRun(ia), Scale(ia) * PlotOutput(fin,ia,j,t) / PeriodLength(t) * x(ia,j) ];
-		}
-		Parameter m3VolTotThin {
-			IndexDomain: t;
-			Range: free;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='Th', Scale(ia)* m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t);
-		}
-		Parameter m3VolTotFina {
-			IndexDomain: t;
-			Range: free;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='FF', Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t);
-		}
-		Parameter m3VolTotPCT {
-			IndexDomain: t;
-			Range: free;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='Cl', Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t);
-		}
-		Parameter ThinningPercent {
-			IndexDomain: t;
-			Definition: m3VolTotThin(t)/(HarvM3Tot(t)+0.001)*100;
-		}
-		Parameter StandingVol {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia), Scale(ia) * m3Vol(ia,j,t) * x(ia,j) ];
-		}
-		Parameter Age40 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t) <=40, Scale(ia)*x(ia,j) ];
-		}
-		Parameter Age80 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t)>40 and Age(ia,j,t) <=80, Scale(ia)*x(ia,j) ];
-		}
-		Parameter Age120 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t)>80 and Age(ia,j,t) <=120, Scale(ia)*x(ia,j) ];
-		}
-		Parameter Age121 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t)>120, Scale(ia)*x(ia,j) ];
-		}
-		Parameter AgePriv40 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t) <=40 and OwnTyp(ia)="Private", Scale(ia)*x(ia,j) ];
-		}
-		Parameter AgePriv80 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t)>40 and Age(ia,j,t) <=80 and OwnTyp(ia)="Private", Scale(ia)*x(ia,j) ];
-		}
-		Parameter AgePriv120 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t)>80 and Age(ia,j,t) <=120 and OwnTyp(ia)="Private", Scale(ia)*x(ia,j) ];
-		}
-		Parameter AgePriv121 {
-			IndexDomain: t;
-			Definition: sum[ (ia,j) | j in xToRun(ia) and Age(ia,j,t)>120 and OwnTyp(ia)="Private", Scale(ia)*x(ia,j) ];
-		}
-		Parameter AgeFina {
-			IndexDomain: t;
-			Definition: {
-				sum[ (ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='FF', Scale(ia) * m3Harv(ia,j,t) * Age(ia,j,t) * x(ia,j) ]/
-				(sum[ (ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='FF', Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] + 0.001)
-			}
-		}
-		Parameter Test {
-			IndexDomain: t;
-			Definition: {
-				sum[ (ia,j) | j in xToRun(ia),
-					Scale(ia) * PlotOutput('ResStm',ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter ParTmp;
-		Parameter ParTmp2;
-		StringParameter CharTmp;
-		Set DiaClass {
-			SubsetOf: Integers;
-			Index: dc;
-			Definition: {
-				{1..15}
-			}
-		}
-		Set AgeClass {
-			SubsetOf: Integers;
-			Index: ac;
-			Definition: {
-				{1..11}
-			}
-		}
-		Parameter TableDA {
-			IndexDomain: (dc,ac,t);
-		}
-		ElementParameter DiaTab {
-			Range: DiaClass;
-		}
-		ElementParameter AgeTab {
-			Range: AgeClass;
-		}
-	}
-	DeclarationSection ResultForest {
-		Parameter FOSumTotArea {
-			Definition: sum[ ia, Scale(ia) ];
-		}
-		Parameter FOSumManagedArea {
-			Definition: sum[ (ia,j) | pA(ia,j) = 1, Scale(ia) * x(ia,j) ];
-		}
-		Parameter FOMgMArea {
-			IndexDomain: r;
-			Definition: {
-				sum[ (y,ia,j) | pA(ia,j) = 1 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * x(ia,j) ]
-			}
-		}
-		Parameter FOSAcompArea {
-			IndexDomain: r;
-			Definition: FOMgMArea(r) * SetasideRate;
-		}
-		Parameter FOSATotArea {
-			IndexDomain: r;
-			Definition: {
-				sum[ (y,ia,j) | pA(ia,j) = 1 and hasSetAside(ia) = 1
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r), Scale(ia) * x(ia,j) ]
-			}
-		}
-		Parameter FONoMgMnoSA {
-			IndexDomain: r;
-			Definition: {
-				sum[ (y,ia,j) | pA(ia,j) = 1 and hasSetAside(ia) = 0 and count( t, Treatm(ia,j,t) <> 'NM' ) = 0
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r), 	Scale(ia) * x(ia,j) ]
-			}
-		}
-		Parameter FOStandingVol {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and PlotsToCounties(ia,y) and CountyToRegion(y,r),
-					 Scale(ia) * m3Vol(ia,j,t) * x(ia,j) ]
-			}
-		}
-		Parameter FOnoSetAsideVol {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and hasSetAside(ia) = 0 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Vol(ia,j,t) * x(ia,j) ]
-			}
-		}
-		Parameter FOPine {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Pin(ia,j,t)  * x(ia,j) ]
-			}
-		}
-		Parameter FOSpruce {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Spr(ia,j,t)  * x(ia,j) ]
-			}
-		}
-		Parameter FODeciduous {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Dec(ia,j,t)  * x(ia,j) ]
-			}
-		}
-		Parameter FOm3HarvVolTot {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOm3VolTotFina {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOm3VolTotThin {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOm3VolTotPCT {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='Cl' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOareaTotFinal {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOareaTotThin {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOareaTotFert {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and ( Treatm(ia,j,t)='Fe' or Treatm(ia,j,t)='FT' ) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOareaTotPCT {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='Cl' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOTimber {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * ( PlotOutput('PinTim',ia,j,t) + PlotOutput('SprTim',ia,j,t) ) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOPulpw {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-				Scale(ia) * 
-				( PlotOutput('PinPuw',ia,j,t) + PlotOutput('SprPuw',ia,j,t) + PlotOutput('Decids',ia,j,t) ) 
-				* x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOResStmTot {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r),
-					Scale(ia) * PlotOutput('ResStm',ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOResRotTot {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * PlotOutput('ResRot',ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOResStmAvailable {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * 
-					PlotOutput('ResStm',ia,j,t) * Extraction('ResStm',ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOResRotAvailable {
-			IndexDomain: (r,t);
-			Range: free;
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * 
-					PlotOutput('ResRot',ia,j,t) * Extraction('ResRot',ia,j,t) * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FOMortality {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * M3skMort(ia,j,t)  * x(ia,j) ] / PeriodLength(t)
-			}
-		}
-		Parameter FONetGrowth {
-			IndexDomain: (r,t);
-			Definition: {
-				( FOStandingVol(r,t+1) - FOStandingVol(r,t) ) / PeriodLength(t) + 
-				( FOm3VolTotFina(r,t) + FOm3VolTotThin(r,t) + FOm3VolTotPCT(r,t) )
-			}
-		}
-		Parameter FOAgeFina {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * Age(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / ( PeriodLength(t) + 0.001 )
-			}
-		}
-		Parameter FOAgeThin {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * Age(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / (PeriodLength(t) + 0.001 )
-			}
-		}
-		Parameter FODiaFina {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * Dgv(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / (PeriodLength(t) + 0.001 )
-			}
-		}
-		Parameter FODiaThin {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia) * Dgv(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / (PeriodLength(t) + 0.001 )
-			}
-		}
-		Parameter FOAge40 {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Age(ia,j,t) <=40 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia)*x(ia,j) ]
-			}
-		}
-		Parameter FOAge80 {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Age(ia,j,t)>40 and Age(ia,j,t) <=80 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia)*x(ia,j) ]
-			}
-		}
-		Parameter FOAge120 {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Age(ia,j,t)>80 and Age(ia,j,t) <=120 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia)*x(ia,j) ]
-			}
-		}
-		Parameter FOAge121 {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | Age(ia,j,t)>120 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia)*x(ia,j) ]
-			}
-		}
-		Parameter FOOldForest {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | ( CountyI(ia) >= 20 and Age(ia,First(j),1) >= 140 or 
-					CountyI(ia) < 20 and Age(ia,First(j),1) >= 120 )
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					Scale(ia)*x(ia,j) ]
-			}
-		}
-		Parameter FORelVolAboveLSAPriv {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)="Private" and Treatm(ia,j,t)='FF'
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r),
-					( Age(ia,j,t) - LSA(ia,j,t) )/LSA(ia,j,t) * m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] / 
-				(sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)="Private" and Treatm(ia,j,t)='FF'
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] + 0.1 ) 
-				* 100
-			}
-		}
-		Parameter FORelVolAboveLSANonPriv {
-			IndexDomain: (r,t);
-			Definition: {
-				sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)<>"Private" and Treatm(ia,j,t)='FF'
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r),
-					( Age(ia,j,t) - LSA(ia,j,t) )/LSA(ia,j,t) * m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] / 
-				(sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)<>"Private" and Treatm(ia,j,t)='FF'
-					and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] + 0.1 ) 
-				* 100
-			}
-		}
-		Parameter FOBiotopAreas {
-			IndexDomain: (tc,r,t);
-		}
-		Parameter Xarea {
-			IndexDomain: (i,j);
-		}
-	}
-	DeclarationSection ResultFacilities {
-		Parameter FATotFactorOutput {
-			IndexDomain: (fut,r,t);
-			Definition: {
-				sum[ (y,fa) | (( fa in SuperFacility and y = 1 )) or CountyToRegion(y,r),
-					NetOutputAtFacility(fut,fa,t) + SideFactorOutput(fut,fa,t) ] / max[1,sum[y,CountyToRegion(y,r) ] ]
-				+
-				sum[ (y,fa,f2) | (( fa in SuperFacility and y = 1 ) or CountyToRegion(y,r)) and f2 in ActiveFacility,
-					FacilityToFacility(fut,fa,f2,t) ] / max[1,sum[y,CountyToRegion(y,r) ] ]
-				
-				! Condition removed: CurrLocationsInCounties(CurrFacInLoc(fa)) = y and ..
-			}
-		}
-		Parameter FATotFactorSupply {
-			IndexDomain: (fut,t);
-			Definition: sum[ fa, NetOutputAtFacility(fut,fa,t) + SideFactorOutput(fut,fa,t) ];
-		}
-		Parameter FAtonKm {
-			IndexDomain: (fin,r,t);
-			Definition: {
-				! From Plot	to processing facilty 
-				sum[ (y,ia,fa) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
-					PlotToFacility(fin,ia,fa,t) * KmPlotToLoc(ia,CurrFacInLoc(fa)) ]
-			}
-		}
-		Parameter FAton {
-			IndexDomain: (fin,r,t);
-			Definition: {
-				! From Plot	to processing facilty 
-				sum[ (y,ia,fa) | PlotsToCounties(ia,y) and CountyToRegion(y,r), PlotToFacility(fin,ia,fa,t) ]
-			}
-		}
-		Parameter FAToUse {
-			IndexDomain: (fin,ft,r,t) | fin in TrpFactor;
-			Definition: {
-				sum[ (y,ia,fa) | PlotsToCounties(ia,y) and CountyToRegion(y,r)
-					and RelevantInput(fin,fa)
-					and CurrFT(fa) = ft, PlotToFacility(fin,ia,fa,t) ]
-				+
-				sum[ (y,f1,f2) |  ( ( f1 in SuperFacility and y = 1) or CountyToRegion(y,r) )
-					and RelevantOutput(fin,f1) and RelevantInput(fin,f2)
-					and CurrFT(f2) = ft,
-					FacilityToFacility(fin,f1,f2,t)]  / max[1,sum[y,CountyToRegion(y,r) ] ]
-			}
-		}
-	}
-	DeclarationSection CarbonModel {
-		Parameter MinCforestPerHa {
-			IndexDomain: t;
-		}
-		Parameter MinDiffCforestPerYear {
-			IndexDomain: t;
-		}
-		Parameter InitialVolTot {
-			Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Vol(ia,First(xToRun(ia)),1) ];
-		}
-		Parameter InitialSharePine {
-			Range: free;
-			Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Pin(ia,First(xToRun(ia)),1) ] / InitialVolTot;
-		}
-		Parameter InitialShareSpruce {
-			Range: free;
-			Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Spr(ia,First(xToRun(ia)),1) ] / InitialVolTot;
-		}
-		Parameter InitialShareDeciduous {
-			Range: free;
-			Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Dec(ia,First(xToRun(ia)),1) ] / InitialVolTot;
-		}
-		Parameter InitialSoilC {
-			IndexDomain: t;
-			Definition: {
-				if t = 1 then
-					InitalSoilCoarseC
-					+ InitalSoilFineC
-					+ InitalSoilLitterC
-				else
-					InitalSoilCoarseC * exp(-DecayRateCoarse*(t-1)*5)
-					+ InitalSoilFineC * exp(-DecayRateFine*(t-1)*5)
-					+ InitalSoilLitterC * exp(-DecayRateLitter*(t-1)*5)
-				endif ;
-			}
-		}
-		Parameter ConDiffCRHS {
-			IndexDomain: t;
-			Definition: {
-				MinDiffCforestPerYear(t) * PeriodLength(t)
-				 - ( InitialSoilC(t+1)- InitialSoilC(t) )
-			}
-		}
-		Variable LiveC {
-			IndexDomain: t;
-			Range: nonnegative;
-			Definition: {
-				sum[ (ia,j) |  t >= pA(ia,j) and t <= pB(ia,j) and Dgv(ia,j,t)>0, Scale(ia) * TSbiom(ia,j,t) * x(ia,j) ] * CsharePertTS
-				+
-				sum[ (ia,j) |  t >= pA(ia,j) and t <= pB(ia,j) and Dgv(ia,j,t)=0, Scale(ia) * 0.45 * m3Vol(ia,j,t) * x(ia,j) ]  ;
-			}
-		}
-		Variable AHCoarseC {
-			IndexDomain: t;
-			Range: nonnegative;
-			Definition: {
-				sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TScoar(ia,j,t) * Scale(ia) * x(ia,j) ]
-				- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResRot', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
-			}
-		}
-		Variable AHFineC {
-			IndexDomain: t;
-			Range: nonnegative;
-			Definition: {
-				sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TSfine(ia,j,t) * Scale(ia) * x(ia,j) ]
-				- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResStm', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
-			}
-		}
-		Variable LitterC {
-			IndexDomain: t;
-			Range: nonnegative;
-			Definition: {
-				sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), 
-				( ( ( 715.990 -10.205*GpsNorthI(ia)*1.e-5 + 4.193*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * ( m3Pin(ia,j,t) + m3Dec(ia,j,t) )  +
-				( -39.615 + 10.614*Hgv(ia,j,t) + 2.985*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * m3Spr(ia,j,t) )
-				 / (m3Vol(ia,j,t)+0.001) / 100. + 1 )
-				* PeriodLength(t) * Scale(ia) * x(ia,j) ]
-				
-				!pine and deciduous: Model	degfre?	Interc	Lat	BAH	
-				! 5	32.000	715.990	-10.205	4.193
-				!Spruce		Interc	h (m)	BAH
-				! LFtotal	2b	-39.615	10.614	2.985
-			}
-		}
-		Variable SoilC {
-			IndexDomain: t;
-			Range: nonnegative;
-			Definition: {
-				if t = FirstPeriod then
-					0
-				else
-					sum[ t1 | t1 <= t-1,
-							AHFineC(t1) * exp(-DecayRateFine*(t-t1))
-							+ AHCoarseC(t1) * exp(-DecayRateCoarse*(t-t1))
-							+ LitterC(t1) * exp(-DecayRateLitter*(t-t1))
-						] * CsharePertTS
-				endif ;
-			}
-		}
-		Variable DiffC {
-			IndexDomain: t | t < LastPeriod;
-			Range: free;
-			Definition: LiveC(t+1) - LiveC(t) + SoilC(t+1) - SoilC(t);
-		}
-		Constraint ConForestC {
-			IndexDomain: t;
-			Definition: LiveC(t) + SoilC(t) >= - InitialSoilC(t) + MinCforestPerHa(t) * sum[ ia | Peat(ia)="0", Scale(ia) ];
-		}
-		Constraint ConDiffPyForestC {
-			IndexDomain: t | t < LastPeriod;
-			Definition: {
-				LiveC(t+1) + SoilC(t+1) - LiveC(t) - SoilC(t) >= ConDiffCRHS(t) + 1e12
-				!MinDiffCforestPerYear(t) * PeriodLength(t) - ( InitialSoilC(t+1)- InitialSoilC(t) )
-			}
-		}
-	}
-	DeclarationSection Qmodel {
-		Comment: "Simplied Q-model following Heureka parameters for spruce/ moisture = fresh. Gives remaining soil C after t periods from start of decay of stemwood and tops and branches, respectively.";
-		Parameter TmaxNR {
-			Definition: 60;
-		}
-		Parameter TmaxR {
-			Definition: 13;
-		}
-		Parameter Gamma {
-			Definition: 1;
-		}
-		Parameter AverageTemp {
-			Definition: 5;
-		}
-		Parameter u0 {
-			Definition: 0.0855 + 0.0157*AverageTemp;
-		}
-		Parameter Zeta {
-			Definition: 1.19;
-		}
-		Parameter Alfa {
-			Definition: 1.26*u0*Gamma;
-		}
-		Parameter CsharePertTS {
-			Definition: 0.5;
-		}
-		Parameter DecayRateLitter {
-			Definition: {
-				0.65091814
-				
-				!0.387278145 * 1.1
-				!!0.112873966
-				!r1/(1+Alfa*t*5)^Zeta
-			}
-		}
-		Parameter DecayRateCoarse {
-			Definition: {
-				/*2*( (1+Alfa*t*5)^(1-Zeta)-(1-min(5*t,TmaxNR)/TmaxNR)*(1+Alfa*(t*5-min(5*t,TmaxNR)) )^(1-Zeta) )/(Alfa*(1-Zeta)*TmaxNR) 
-				+ 2*( (1+Alfa*(t*5-min(5*t,TmaxNR)))^(2-Zeta) - (1+Alfa*t*5)^(2-Zeta) ) / ( Alfa^2*(1-Zeta)*(2-Zeta)*TmaxNR^2) 
-				+  (1-min(5*t,TmaxNR)/TmaxNR)^2
-				*/
-				0.028586756
-				
-				!0.03326031 * 1.1
-				!0.007667535  ! See SoilCarbon2
-				!0.005853959
-			}
-		}
-		Parameter DecayRateFine {
-			Definition: {
-				/* 2*( (1+Alfa*t*5)^(1-Zeta)-(1-min(5*t,TmaxR)/TmaxR)*(1+Alfa*(t*5-min(5*t,TmaxR)) )^(1-Zeta) )/(Alfa*(1-Zeta)*TmaxR) 
-				+ 2*( (1+Alfa*(t*5-min(5*t,TmaxR)))^(2-Zeta) - (1+Alfa*t*5)^(2-Zeta) ) / ( Alfa^2*(1-Zeta)*(2-Zeta)*TmaxR^2) 
-				+  (1-min(5*t,TmaxR)/TmaxR)^2
-				*/
-				0.091028101
-				
-				!0.162110997 * 1.1
-				!0.057703199  ! See SoilCarbon2
-				!0.057971155
-			}
-		}
-		Parameter DecayRateInitialC {
-			IndexDomain: t;
-			Definition: {
-				exp(-0.043*t*5)
-				!( 1 + (0.135 + 0.00699*AverageTemp )*5*t)^(1-Zeta) ! lat > 59.5
-				!( 1 + (-0.0176 + 0.0137*17)*5*(t-1) )^(1-Zeta) ! lat <= 59.5
-			}
-			Comment: "The amount of initial C left in period t (cf. different role of t in other deacay rate functions)";
-		}
-	}
-	DeclarationSection CAfBioParam {
-		Parameter TonTSperM3fub {
-			Text: "Check that the number is the same as in sheet ConvFact";
-			Definition: 0.46;
-		}
-		Parameter InitalSoilCoarseC {
-			Definition: {
-				!0.397929837/DecayRateCoarse * 
-				60.68820513 
-				 *	sum[ (ia,j) | Peat(ia)="0" and FirstPeriod >= pA(ia,j) and FirstPeriod <= pB(ia,j), Scale(ia)* x(ia,j) ]
-			}
-		}
-		Parameter InitalSoilFineC {
-			Definition: {
-				!0.797305816  / DecayRateFine * 
-				 15.24429915
-				* 	sum[ (ia,j) | Peat(ia)="0" and FirstPeriod >= pA(ia,j) and FirstPeriod <= pB(ia,j), Scale(ia)* x(ia,j) ]
-			}
-		}
-		Parameter InitalSoilLitterC {
-			Definition: {
-				! 082195621  / DecayRateLitter * 
-				8.597495726 
-				* sum[ (ia,j) | Peat(ia)="0" and FirstPeriod >= pA(ia,j) and FirstPeriod <= pB(ia,j), Scale(ia)* x(ia,j) ]
-			}
-			Comment: "ton C from Heureka based on productive forest, NFI 2014-2018  - 64 t/ha";
-		}
-		Parameter LivingC {
-			IndexDomain: t;
-			Text: "ton C";
-			Definition: {
-				sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j),
-					Scale(ia) * TSbiom(ia,j,t)  * x(ia,j) ] * CsharePertTS
-				+
-				sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Dgv(ia,j,t)=0, 
-					Scale(ia) * 0.45 * m3Vol(ia,j,t) * x(ia,j) ]
-			}
-		}
-		Parameter AfterHarvestFine {
-			IndexDomain: t;
-			Definition: {
-				sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TSfine(ia,j,t) * Scale(ia) * x(ia,j) ]
-				- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResStm', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
-			}
-		}
-		Parameter AfterHarvestCoarse {
-			IndexDomain: t;
-			Definition: {
-				sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TScoar(ia,j,t) * Scale(ia) * x(ia,j) ]
-				- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResRot', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
-			}
-		}
-		Parameter LitterFall {
-			IndexDomain: t;
-			Text: "tDM per 5 year";
-			Definition: {
-				!( 2300 * FrPineshare(t)/100 + 2800 * FrSpruceshare(t)/100 + 2200 * FrDeciduousshare(t)/100 ) / 1000 * 
-				!sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), Scale(ia) * M3skMort(ia,j,t) * x(ia,j) ]
-				!* 2 
-				!+ sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), Scale(ia) * 1 * PeriodLength(t) * x(ia,j) ]
-				
-				sum[ (ia,j) | Peat(ia)="0" and t >= pA(ia,j) and t <= pB(ia,j), 
-				( ( ( 715.990 -10.205*GpsNorthI(ia)*1.e-5 + 4.193*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * ( m3Pin(ia,j,t) + m3Dec(ia,j,t) )  +
-				( -39.615 + 10.614*Hgv(ia,j,t) + 2.985*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * m3Spr(ia,j,t) )
-				 / (m3Vol(ia,j,t)+0.001) / 100. + 1 )
-				* PeriodLength(t) * Scale(ia) * x(ia,j) ]
-			}
-		}
-		Parameter TotSoilC {
-			IndexDomain: t;
-			Definition: {
-				if t = 1 then
-					InitalSoilCoarseC
-					+ InitalSoilFineC
-					+ InitalSoilLitterC
-				else
-					InitalSoilCoarseC * exp(-DecayRateCoarse*(t-1))
-					+ InitalSoilFineC * exp(-DecayRateFine*(t-1))
-					+ InitalSoilLitterC * exp(-DecayRateLitter*(t-1))
-					+
-					sum[ t1 | t1 <= t-1,
-							AfterHarvestFine(t1) * exp(-DecayRateFine*(t-t1))
-							+ AfterHarvestCoarse(t1) * exp(-DecayRateCoarse*(t-t1))
-							+ LitterFall(t1) * exp(-DecayRateLitter*(t-t1))
-						] * CsharePertTS
-				endif ;
-			}
-		}
-	}
-	DeclarationSection DispFactParam {
-		Parameter InitialProdStock {
-			IndexDomain: fut;
-		}
-		Parameter ProdStock {
-			IndexDomain: (fut,t);
-		}
-		Parameter DpTreeDiffStock {
-			IndexDomain: t;
-		}
-		Parameter DpSoilDiffSTock {
-			IndexDomain: t;
-		}
-		Parameter DpProdDiffStock {
-			IndexDomain: t;
-		}
-		Parameter DpSubProd {
-			IndexDomain: t;
-		}
-		Parameter DPSubEol {
-			IndexDomain: t;
-		}
-		Parameter DpOrganicSoil {
-			IndexDomain: t;
-			Text: "Yearly flux of C";
-		}
-		Parameter NCE {
-			IndexDomain: t;
-		}
-	}
-	DeclarationSection GMPdeclarations {
-		Parameter RCvalue {
-			IndexDomain: j;
-			Range: free;
-		}
-		Parameter RelativeImprovm;
-		ElementParameter SweForGMP {
-			Range: AllGeneratedMathematicalPrograms;
-		}
-	}
 	Procedure ReadAndSaveGAYAData {
 		Body: {
 			!-- Read
@@ -2354,6 +1396,7 @@ Model Main_SweFor {
 			casefilesave(FileNames('ForestSave'),GAYAidentifiers);
 			statusmessage('Forest data saved');
 		}
+		Comment: "Come here to read input data from GAYA and store this in .data file according to specs in GAYAidentifiers";
 	}
 	Procedure ReadStandAndPlotData {
 		Body: {
@@ -2368,6 +1411,7 @@ Model Main_SweFor {
 			dex::ReadFromFile(FileNames('SegmentData'), "MapSegment");
 			casefilemerge(FileNames('ForestMerge'));
 		}
+		Comment: "Come here to read data from .data file (GAYA input) and data describing plots (aka stands or segments)";
 	}
 	Procedure ReadIO {
 		Body: {
@@ -2473,6 +1517,7 @@ Model Main_SweFor {
 			
 			axll::CloseWorkBook(WorkbookFilename : WorkbookName );
 		}
+		Comment: "Come here to read data in the IO excel file (FileNames(\'InputOutputData\'))";
 	}
 	Procedure ReadFacilities {
 		Body: {
@@ -2616,6 +1661,7 @@ Model Main_SweFor {
 			
 			statusmessage("ReadFacilities complete") ;
 		}
+		Comment: "Come here to read data on locations and the facilities located in locations";
 	}
 	Procedure ReadDistances {
 		Body: {
@@ -2625,45 +1671,64 @@ Model Main_SweFor {
 			dex::ReadFromFile(FileNames('DistancesPlotToLoc'), "PlotToLocMapping");
 			dex::AddMapping("LocToLocMapping","MappingCSV_LocToLoc.xml");
 			dex::ReadFromFile(FileNames('DistancesLocToLoc'), "LocToLocMapping");
-			
-			/*
-			InputFile := FileNames('DistancesLocToLoc') ;
-			read from file InputFile;
-			InputFile := FileNames('DistancesPlotToLoc') ;
-			read from file InputFile;
-			*/
 		}
+		Comment: "Come here to read distances between plots and locations FileNames(\'DistancesPlotToLoc\') and between locations FileNames(\'DistancesLocToLoc\')";
 	}
 	Procedure SetSets {
 		Body: {
+			!-- Definel what plots to run (ia) and the set of programs for each plot (in xToRun)
 			option seed := 1234 ;
 			RND(i) := Uniform( 0, 1 )  ;
 			PlotToRun := { i | NRatg(i,first(j),1) and RND(i) < RNDrun };
 			xToRun(ia) := { j | sum[ t, NRatg(ia,j,t) ] } ;
 			
+			!-- Comute the scaling factor for each plot (the representative area)
+			if ForestMode = 'NFI' then
+			! Tax plots are forest
+				ParTmp := sum[ia,Area(ia)];
+				Scale(ia) := TotalForestArea / ParTmp * Area(ia);
+			elseif ForestMode = 'Stand' then
+			! Stands with equal representation are forest
+				Scale(ia) := TotalForestArea / Card(PlotToRun);
+				OwnTyp( ia | Area(ia) < 142 ) := "Private"; ! Tis is based on Area = parcel area
+			else
+				statusmessage('ForestMode not preperly specified, either "NFI" or "Stand"');
+				halt;
+			endif;
+			
+			!-- Identify the start and stop periods for each program
 			pB( (ia,j) | j in xToRun(ia) ) := last( t | NRatg(ia,j,t) );
 			pA( (ia,j) | j in xToRun(ia) ) := first( t | NRatg(ia,j,t) );
 			pA( (ia,j) | pA(ia,j) < LastPeriod and pA(ia,j) < pB(ia,j) and Treatm(ia,j,pA(ia,j)) = 'FF'
 				and pA(ia,j) <> FirstPeriod and pB(ia,j) <> LastPeriod) := pA(ia,j) + 1;
 			
-			if sum[b,FastArea(b)] then
-			! Tax plots are represented by stands
-				E2S(i) := StringToElement(Parcel,E2Se(i),1);	! coupling stands and parcels
-				ParcelArea(b) := sum[ ia | E2S(ia) = b, Area(ia) ]; 
-				ParcelToRun := { b | ParcelArea(b) }; ! Index ba
-				Scale(ia) := TotalForestArea / Card(ParcelToRun) / ParcelArea(E2S(ia)) * Area(ia);
-			else
-			! Tax plots are forest
-				ParTmp := sum[ia,Area(ia)];
-				Scale(ia) := TotalForestArea / ParTmp * Area(ia);
-			endif;
-			
+			!-- Remove not eligible programs
+			! Exclude management of setasides 	
+			SetSetAsides;
+			xToRun( ia | hasSetAside(ia) ) -= { j | count( t, Treatm(ia,j,t) <> 'NM' ) > 0 }  ;
+			! Include only eligible age for final harvest (regulated by parameter RelativLSA)
+			xToRun(ia) -= 
+				{ j | count( t, t = pB(ia,j) and Treatm(ia,j,t) = 'FF' and Age(ia,j,t) < RelativLSA * LSA(ia,j,t) ) > 0 };
+			! Remove final felling from alpine forest
+			xToRun(ia) -= 
+				{ j | count( t, t = pB(ia,j) and Treatm(ia,j,t) = 'FF' and Alpine(ia) > 0  ) > 0 };
+			! Ensure at least one program for each plot
+			CharTmp := FormatString("%e", first(j) );
+			xToRun( ia | Card(xToRun(ia)) = 0 ) += { j | j = StringToElement(Prog,CharTmp) }  ; 
+			!-- End: Select plots and activities -----------------
+		}
+		Comment: "Come here to set what plots to run, what programs to run, define the scaling parameter for each plot";
+	}
+	Procedure ManageTransports {
+		Body: {
+			!-- Define the set of locations and facilities in them
 			CurrFT(f) := StringToElement(FacilityTypesSet,FacilityType(f)) ;
 			Facility -= { f | InitialCapacity(f) < MinCapacityQuantity(CurrFT(f)) or not CurrFT(f) in FacilityTypesSet };
 			CurrFacInLoc(f) := StringToElement( Location, FacilityLocation(f) ) ;
 			Location := { l | Count[ f | CurrFacInLoc(f) = l ]  } ;
 			Facility -= { f | not CurrFacInLoc(f) in Location };
 			
+			!-- Define a set of superfacilities (aggregated facility capacities with virtual locations) for test runs
 			statusmessage("Adding superlocations and superfacilities") ;
 			Location += data { 'SuperLoc' } ;
 			for ft do
@@ -2678,10 +1743,15 @@ Model Main_SweFor {
 				InitialCapacity(CurrFac) := 
 					sum[ f | CurrFT(f) = ft and CurrFacInLoc(f) <> 'SuperLoc', InitialCapacity(f) ] ;
 			endfor ;
-		}
-	}
-	Procedure ManageTransports {
-		Body: {
+			
+			! Come here to determine the active set of facilities
+			if RunMode = 'sup' then 
+				Facility := SuperFacility ;
+			else 
+				Facility := Facility - SuperFacility ;
+			endif ;
+			ActiveFacility := Facility;
+			
 			! Define transport related sets
 			RelevantInput( (fin,f) | sum[ fut, abs( TabInUtFacilityType(CurrFT(f),fin,fut) ) ] > 0 ) := 1 ;
 			RelevantOutput( (fut,f) | sum[ fin, abs( TabInUtFacilityType(CurrFT(f),fin,fut) ) ] > 0 ) := 1 ;
@@ -2692,12 +1762,12 @@ Model Main_SweFor {
 			empty RelevantTrpFromPlot, RelevantTrpBetwFac, BestTrpToFacA, BestTrpToFacB ;
 			
 			! missing distances
-			KmPlotToLoc( (ia,l) | KmPlotToLoc(ia,l) = 0 and
+			/*KmPlotToLoc( (ia,l) | KmPlotToLoc(ia,l) = 0 and
 				SQRT( (GpsEastI(ia)-GpsEastL(l))^2 + (GpsNorthI(ia)-GpsNorthL(l))^2 ) / 1000 * Slinger < 
 					min[ fin | CommodityType(fin) = "L", MaxTrpDistance(fin) ] ) :=
 					SQRT( (GpsEastI(ia)-GpsEastL(l))^2 + (GpsNorthI(ia)-GpsNorthL(l))^2 ) / 1000 * Slinger; 
 			KmLocToLoc( (l1,l2) | KmLocToLoc(l1,l2) = 0 and l1 <> l2 ) := 
-				SQRT( (GpsEastL(l1)-GpsEastL(l2))^2 + (GpsNorthL(l1)-GpsNorthL(l2))^2 ) / 1000 * 2 ;
+				SQRT( (GpsEastL(l1)-GpsEastL(l2))^2 + (GpsNorthL(l1)-GpsNorthL(l2))^2 ) / 1000 * 2 ; */
 			
 			
 			! Let all facilities be active incl. superfacilities (to get relevant distance)
@@ -2714,15 +1784,7 @@ Model Main_SweFor {
 				endfor ;
 			endfor ;
 			
-			! Come here to determine the active set of facilities t
-			if RunMode = 'sup' then 
-				Facility := SuperFacility ;
-			else 
-				Facility := Facility - SuperFacility ;
-			endif ;
-			ActiveFacility := Facility;
-			
-			statusmessage("Computing relevant transport options - Facility to facility - non Min spanning tree") ;
+			statusmessage("Computing relevant transport options - Facility to facility") ;
 			for (ft,fut,f1) | fut in TrpFactor
 				and not f1 in SuperFacility ! Calculated based on average transport distances
 				and MaxNoTrpLinks(fut,ft) and RelevantOutput(fut,f1) do
@@ -2735,444 +1797,35 @@ Model Main_SweFor {
 			RelevantTrpBetwFac( (fut,f1,f2) | f1 <> f2 and CurrFacInLoc(f1) = CurrFacInLoc(f2) 
 				and RelevantOutput(fut,f1) and RelevantInput(fut,f2) ) := 1;
 			
-			! Treat0: Fina = 6; Thin = 3; PCT = 2; System 1 for GROT, system 2 for stumps (Dimitris ... 2017: Regional GIS-based evaluation...)
 			statusmessage("Computing transport costs") ;
 			empty TrpCostPlotToFac, TrpCostFacToFac;
 			
-			TrpCostPlotToFac( (fin,ia,f) | RelevantTrpFromPlot(fin,ia,f) ) := 
-				FixTrpCost(fin) + VarTrpCost(fin) * KmPlotToLoc(ia,CurrFacInLoc(f));
-			TrpCostFacToFac( (fut,f1,f2) | RelevantTrpBetwFac(fut,f1,f2) and CurrFacInLoc(f1) <> CurrFacInLoc(f2) ) :=
-				FixTrpCost(fut) + VarTrpCost(fut) * KmLocToLoc(CurrFacInLoc(f1),CurrFacInLoc(f2));
+			if RunMode = 'sup' then 
+				TrpCostFacToFac( (fut,f1,f2) | RelevantTrpBetwFac(fut,f1,f2) and f2 in SuperFacility
+					and CurrFT(f2) <> 'Heatpl' and CurrFT(f2) <> 'TerHea' ) := 
+						FixTrpCost(fut) + VarTrpCost(fut) * 93;
+				TrpCostFacToFac( (fut,f1,f2) | RelevantTrpBetwFac(fut,f1,f2) and f2 in SuperFacility
+					and ( CurrFT(f2) <> 'Heatpl' or CurrFT(f2) <> 'TerHea' ) ) := 
+						FixTrpCost(fut) + VarTrpCost(fut) * 63;
+			else
+				TrpCostPlotToFac( (fin,ia,f) | RelevantTrpFromPlot(fin,ia,f) ) := 
+					FixTrpCost(fin) + VarTrpCost(fin) * KmPlotToLoc(ia,CurrFacInLoc(f));
+				TrpCostFacToFac( (fut,f1,f2) | RelevantTrpBetwFac(fut,f1,f2) and CurrFacInLoc(f1) <> CurrFacInLoc(f2) ) :=
+					FixTrpCost(fut) + VarTrpCost(fut) * KmLocToLoc(CurrFacInLoc(f1),CurrFacInLoc(f2));
+			endif;
 			
-			TrpCostFacToFac( (fut,f1,f2) | RelevantTrpBetwFac(fut,f1,f2) and f2 in SuperFacility
-				and CurrFT(f2) <> 'Heatpl' and CurrFT(f2) <> 'TerHea' ) := 
-					FixTrpCost(fut) + VarTrpCost(fut) * 93;
-			TrpCostFacToFac( (fut,f1,f2) | RelevantTrpBetwFac(fut,f1,f2) and f2 in SuperFacility
-				and ( CurrFT(f2) <> 'Heatpl' or CurrFT(f2) <> 'TerHea' ) ) := 
-					FixTrpCost(fut) + VarTrpCost(fut) * 63;
+			
 			
 			statusmessage("ManageTransports completed") ;
 		}
-	}
-	Procedure PreRun {
-		Body: {
-			!-- Read and save forest data
-			FileNames('Forest')     := "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
-			FileNames('Factors')    := "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
-			FileNames('ForestSave') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_MinTop8.data";
-			!-- Distance matrices
-			FileNames('DistancesLocToLoc') := "D:/Users/ljeraa/BioFrame/SweForData/CommonData/DistancesLocToLoc.csv";
-			FileNames('DistancesPlotToLoc'):= "D:/Users/ljeraa/BioFrame/SweForData/CommonData/DistancesPlotToLoc#2.csv";
-			!-- Read forest reltaed data
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_b18p4.data";
-			FileNames('SegmentData') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/SegmentData.csv";
-			!-- Facilities and input/output related data
-			FileNames('InputOutputData'):= "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/InputOutput#3Seydlitz.xlsx";
-			FileNames('FacilityData')   := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/SweForFacilytyData#3.xlsx";
-			!-- Output results
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/Cement/Res_Cement.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Ind_MinTop8.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Saw_MinTop8.csv";
-			
-			!--- All data preparation including saving
-			!ReadAndSaveGAYAData;
-			ReadStandAndPlotData ;
-			statusmessage("ReadStandAndPlotData OK") ;
-			ReadIO;
-			ReadFacilities ;
-			statusmessage("ReadIOandFacilities OK") ;
-			ReadDistances ;
-			statusmessage("ReadDistances OK") ;
-			SetSets;
-			statusmessage("SetSets OK") ;
-			ManageTransports ;
-			
-			statusmessage('ManageTransports completed') ;
-			RunAnalysis ;
-			PutRegionResults ;
-			halt;
-			PutIndOutput;
-			PutBirchSawMillAnalysisData;
-			halt;
-			!-- b12p4s15
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b12p4.data";
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b12p4s15.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_b12p4s15.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_b12p4s15.csv";
-			!--- All data preparation including saving
-			ReadStandAndPlotData ;
-			ReadIO;
-			ReadFacilities ;
-			ReadDistances ;
-			SetSets;
-			ManageTransports ;
-			RunAnalysis ;
-			PutRegionResults ;
-			PutIndOutput;
-			PutBirchSawMillAnalysisData;
-			
-			!-- b18p2s15
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b18p2.data";
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b18p2s15.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_b18p2s15.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_b18p2s15.csv";
-			!--- All data preparation including saving
-			ReadStandAndPlotData ;
-			ReadIO;
-			ReadFacilities ;
-			ReadDistances ;
-			SetSets;
-			ManageTransports ;
-			RunAnalysis ;
-			PutRegionResults ;
-			PutIndOutput;
-			PutBirchSawMillAnalysisData;
-			
-			!-- b18p4s15
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b18p4.data";
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b18p4s15.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_b18p4s15.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_b18p4s15.csv";
-			!--- All data preparation including saving
-			ReadStandAndPlotData ;
-			ReadIO;
-			ReadFacilities ;
-			ReadDistances ;
-			SetSets;
-			ManageTransports ;
-			RunAnalysis ;
-			PutRegionResults ;
-			PutIndOutput;
-			PutBirchSawMillAnalysisData;
-			
-			!-- bf12p1s15
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_bf12p1.data";
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_bf12p1s15.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_bf12p1s15.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_bf12p1s15.csv";
-			!--- All data preparation including saving
-			ReadStandAndPlotData ;
-			ReadIO;
-			ReadFacilities ;
-			ReadDistances ;
-			SetSets;
-			ManageTransports ;
-			RunAnalysis ;
-			PutRegionResults ;
-			PutIndOutput;
-			PutBirchSawMillAnalysisData;
-			
-			!-- bf18p1s15
-			FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_bf18p1.data";
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_bf18p1s15.csv";
-			FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_bf18p1s15.csv";
-			FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_bf18p1s15.csv";
-			!--- All data preparation including saving
-			ReadStandAndPlotData ;
-			ReadIO;
-			ReadFacilities ;
-			ReadDistances ;
-			SetSets;
-			ManageTransports ;
-			RunAnalysis ;
-			PutRegionResults ;
-			PutIndOutput;
-			PutBirchSawMillAnalysisData;
-		}
-	}
-	Procedure RunAnalysis {
-		Body: {
-			!-- Select plots and activities ----------------------------------------------------------------------------
-			! No harvesting on small stands
-			xToRun( ia | Area(ia) < 0.1 ) -= { j | count( t, Treatm(ia,j,t) <> 'NM' ) > 0 }  ; 
-			! Include only eligible age for final harvest
-			xToRun(ia) -= 
-				{ j | count( t, t = pB(ia,j) and Treatm(ia,j,t) = 'FF' and Age(ia,j,t) < RelativLSA * LSA(ia,j,t) ) > 0 };
-			! Remove final felling from "fjärrnära skog"
-			xToRun(ia) -= 
-				{ j | count( t, t = pB(ia,j) and Treatm(ia,j,t) = 'FF' and Fjanara(ia) > 0  ) > 0 };
-			! Old forest
-			!xToRun(ia ) -= { j | ( count( t, TCc(Treat0(ia,j,t)) = 'FF' and NUTS2I(ia) >= 30 and Age(ia,j,t) >= 140 ) +	
-			!		count( t, TCc(Treat0(ia,j,t)) = 'FF' and NUTS2I(ia) < 30 and Age(ia,j,t) >= 120) ) > 0 } ;
-			! Only do nothing allowed	
-			!TCc(Treat0(ia,j,t)) = 'FF' and NUTS(ia) < 30 and Age(ia,j,t) >= 120, 1 ] = 0
-				!	and sum[ t, m3Harv(ia,j,t)] = 0	!		};
-			! None allowed to fertilize
-			!xToRun(ia ) -= { j | ( count( t, TCc(Treat0(ia,j,t)) = 'Fe' ) + count( t, TCc(Treat0(ia,j,t)) = 'FT'  ) ) > 0 } ;
-			! Private are not allowed to fertilize		
-			xToRun(ia ) -= { j | OwnTyp(ia) = 'Private' and ( count( t, Treatm(ia,j,t) = 'Fe' ) + count( t, Treatm(ia,j,t) = 'FT' ) ) > 0 }  ;
-			! Fertilize only prior to final felling
-			xToRun(ia ) -= { j | ( count( t, Treatm(ia,j,t) = 'Fe'  and Treatm(ia,j,t+2) <> 'FF')  ) > 0 }  ;
-			! Exclude non-managed land and include among set aside area	
-			empty hasSetAside;
-			hasSetAside( ia | CountyI(ia) >= 20 and Age(ia,First(j),1) >= 140 + 20 or CountyI(ia) < 20 and Age(ia,First(j),1) >= 120 + 20 ) := 1 ;
-			SetSetAsides;
-			!hasSetAside( ia | count( j | TCc(Treat0(ia,j,1)) = 'NM' and TCc(Treat0(ia,j,2)) = 'NM' and Age(ia,j,1) > LSA(ia)*1.3 
-			!	and (m3Vol(ia,j,2) - m3Vol(ia,j,1))/(m3Vol(ia,j,1)+0.001) < (1-exp(-0.005*5))) > 1 ) := 1 ;
-			xToRun( ia | hasSetAside(ia) ) -= { j | count( t, Treatm(ia,j,t) <> 'NM' ) > 0 }  ; 
-			!-- End: Select plots and activities -----------------
-			
-			empty x;
-			if RunMode = 'GMP' then 
-				SolveGMPrnd;
-				halt;
-			elseif RunMode = '1old' then 
-				CaseFileLoad( "Solution1.data" ) ;
-				xToRun(ia ) -= { j | x(ia,j).level = 0 };
-			elseif RunMode = '2old' then 
-				CaseFileLoad( "Solution2.data" ) ;
-				xToRun(ia ) -= { j | x(ia,j).level = 0 };
-			elseif RunMode = '2fix' then 
-				CaseFileLoad( "BAU_V12.1.data" ) ;
-				xToRun(ia ) -= { j | x(ia,j).level = 0 };
-				x( (ia,j) | j in xToRun(ia) ).Upper := x(ia,j);
-				x( (ia,j) | j in xToRun(ia) ).Lower := x(ia,j);
-			endif;
-			
-			!-- Add bounds data -------------------------------------------------------------------
-			empty TotalSupply,NetOutputAtFacility;
-			TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' ) := q0(fut,t);
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F'  ) := 
-				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
-				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			
-			statusmessage('Solving: ' + RunMode);
-			solve MaxNetSurplus ;
-			if MaxNetSurplus.Objective = NA then
-				halt;
-				SolveGMPrnd;
-				statusmessage('Solved: SolveGMPrnd');
-				PutRegionResults;
-			else
-				statusmessage('Solved: ' + RunMode);
-				if RunMode = 'all' then 
-					CaseFileSave( "Solution2.data", SolutionIdentifiers ) ;
-				endif;
-			endif;
-		}
-	}
-	Procedure PutRegionResults {
-		Body: {
-			DisplacementModel ;
-			BiotopAreas ;
-			
-			OutputFileResults := FileNames('RegionResult') ;
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			PUT "SumTotArea",@20,FOSumTotArea:>20:0, / ;
-			PUT "SumManagedArea",@20,FOSumManagedArea:>20:0, / ;
-			PUT "NoActivePlots",@20,sum[ ia, 1 ]:>20:0, / ;
-			PUT "NoActivex",@20,Count( (ia,j), j in xToRun(ia) and x(ia,j).Upper = 1 ):>20:0, / ;
-			PUT "NoOfTrpActivities",@20,( sum[ (fin,ia,fa), RelevantTrpFromPlot(fin,ia,fa) ] 
-				+ sum[ (fut,f1,f2) | f1 in ActiveFacility and f2 in ActiveFacility, RelevantTrpBetwFac(fut,f1,f2)  ] ):>20:0, / ;
-			PUT "ObjectiveValue",@20,MaxNetSurplus.Objective * 1.e-9:>20:4, / ;
-			PUT "NPVRevenue",@20,sum[ t, df(t)* RevenuePerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
-			PUT "NPVCosts",@20,sum[ t, df(t)* CostsPerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
-			PUT "NPVAmenity",@20,sum[ t, df(t)* AmenityPerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
-			PUT "NPVTrade",@20,sum[ t, df(t)* TradePerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
-			PUT "NPVCvalue",@20,df(min(ForestCValuePeriods+1,LastPeriod)) * CValue * PeriodLength(1) * 1.e-6:>20:0, / ;
-			PUT "SetAsideValue",@20,df(FirstPeriod) * SetAsideValue * PeriodLength(1) * 1.e-6:>20:0, / ;
-			PUT "ForestEndValue",@20,df(LastPeriod) * EndingValue * PeriodLength(1) * 1.e-6:>20:0, / ;
-			
-			PUT "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
-			PUT "HarvestCost" ,  @30; for t do PUT HarvestCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
-			PUT "TrpCost" ,  @30; for t do PUT TrpCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
-			PUT "FacilityCost" ,  @30; for t do PUT FacilityCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
-			PUT "CapacityCost" ,  @30; for t do PUT CapacityCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
-			PUT "CarbonValue", @30; for t do PUT -99 >10:0; endfor ; PUT / ;
-			
-			PUT /; ! Non regional values
-			
-			for fut | CommodityType(fut) = 'P' or CommodityType(fut) = 'D' or  CommodityType(fut) = 'F' do CurrFact := fut ; 
-					PUT "Prices_", FormatString("%e", CurrFact ),  @30; for t do PUT p0(fut,t) : >10:0; endfor ; PUT / ;
-			endfor ;  
-			for fut | Elasticity(fut)  do CurrFact := fut ; 
-					PUT "Prices_", FormatString("%e", CurrFact ),  @30; for t do PUT FinalPrices(fut,t) : >10:0; endfor ; PUT / ;
-			endfor ; 
-			for fin | MaxImports(fin,1) do CurrFact := fin ; 
-				PUT "Import_", FormatString("%e", CurrFact ),  @30; 
-					for t do PUT ConImports(fin,t).ShadowPrice * Power(df(t),-1) : >10:0; endfor ; PUT / ;
-			endfor ; 
-			for fut | CommodityType(fut) = 'P' or CommodityType(fut) = 'D' or  CommodityType(fut) = 'F' or CommodityType(fut) = 'E' do CurrFact := fut ; 
-				PUT "SupplyToMarket_", FormatString("%e", CurrFact ),  @30; for t do PUT FATotFactorSupply(fut,t) * 1.e-6: >10:3; endfor ; PUT / ;
-			endfor ; 
-			
-			PUT / ;
-			PUT "NCE" ,  @30; for t do PUT NCE(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "DpTreeDiffStock" ,  @30; for t do PUT DpTreeDiffStock(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "DpSoilDiffSTock" ,  @30; for t do PUT DpSoilDiffSTock(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "DpProdDiffStock" ,  @30; for t do PUT DpProdDiffStock(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "DpSubProd" ,  @30; for t do PUT DpSubProd(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "DPSubEol" ,  @30; for t do PUT DPSubEol(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "DpOrganicSoil" ,  @30; for t do PUT DpOrganicSoil(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "LivingC" ,  @30; for t do PUT LivingC(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			PUT "AfterHarvestFine" ,  @30; for t do PUT AfterHarvestFine(t) * 1.e-6 * 0.2: 10:2; endfor ; PUT / ; 
-			PUT "AfterHarvestCoarse" ,  @30; for t do PUT AfterHarvestCoarse(t) * 1.e-6 * 0.2: >10:2; endfor ; PUT / ; 
-			PUT "LitterFall" ,  @30; for t do PUT LitterFall(t) * 1.e-6 * 0.2: >10:2; endfor ; PUT / ; 
-			PUT "TotSoilC" ,  @30; for t do PUT TotSoilC(t) * 1.e-6: >10:2; endfor ; PUT / ;
-			
-			for r | sum[ y, CountyToRegion(y,r) ] do
-			
-			PUT /, "Region ", @30; for y | CountyToRegion(y,r) do PUT y:>3:0; endfor ; PUT / ;
-			
-			PUT "MgMArea SAcompArea SATotArea NoMgMnoSA", @40;
-				PUT FOMgMArea(r):<10:0; PUT FOSAcompArea(r):<10:0; PUT FOSATotArea(r):<10:0; PUT FONoMgMnoSA(r):<10:0;
-			
-			PUT/, "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
-			
-				for t do PutPeriod(t) :=  
-					sum[ fin | CommodityType(fin) = 'L', FAtonKm(fin,r,t) ] /
-					( sum[ fin | CommodityType(fin) = 'L', FAton(fin,r,t) ] + 1 ); endfor ;
-				PUT "tonKmLogs" ,  @30; for t do PUT PutPeriod(t):>10:1; endfor ; PUT / ;
-			
-				for t do PutPeriod(t) :=  
-					sum[ fin | CommodityType(fin) = 'R', FAtonKm(fin,r,t) ] /
-					( sum[ fin | CommodityType(fin) = 'R', FAton(fin,r,t) ] + 1 ); endfor ;
-				PUT "tonKmReidues" ,  @30; for t do PUT PutPeriod(t):>10:1; endfor ; PUT / ;
-				PUT "m3VolTot" ,  @30; for t do PUT FOm3HarvVolTot(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "m3VolTotPCT" ,  @30; for t do PUT FOm3VolTotPCT(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "m3VolTotThin" ,  @30; for t do PUT FOm3VolTotThin(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "m3VolTotFina" ,  @30; for t do PUT FOm3VolTotFina(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "AreaTotPCT" ,  @30; for t do PUT FOareaTotPCT(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "AreaTotThin" ,  @30; for t do PUT FOareaTotThin(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "AreaTotFina" ,  @30; for t do PUT FOareaTotFinal(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "AreaTotFert" ,  @30; for t do PUT FOareaTotFert(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "ThinningPercent" ,  @30; for t do 
-					PUT FOm3VolTotThin(r,t) * Power( FOm3HarvVolTot(r,t) + 0.01, -1 ): >10:2; 
-				endfor ; PUT / ;
-				PUT "StandingVol" ,  @30; for t do PUT FOStandingVol(r,t) * 1.e-6: >10:0; endfor ; PUT / ;
-				PUT "m3VolPerHa" ,  @30; for t do PUT FOStandingVol(r,t) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:0; endfor ; PUT / ;
-				PUT "noSetAsideVol" ,  @30; for t do PUT FOnoSetAsideVol(r,t) * 1.e-6: >10:0; endfor ; PUT / ;
-				PUT "noSetAsidePerHa" ,  @30; for t do 
-					PUT FOnoSetAsideVol(r,t) * Power( FOMgMArea(r) - FOSATotArea(r) + 0.0001, -1 ): >10:0; 
-				endfor ; PUT / ;
-				PUT "PineShare" ,  @30; for t do PUT FOPine(r,t) * Power( FOStandingVol(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "SpruceShare" ,  @30; for t do PUT FOSpruce(r,t) * Power( FOStandingVol(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "DecidiousShare" ,  @30; for t do PUT FODeciduous(r,t) * Power( FOStandingVol(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "NetGrowth" ,  @30; for t do PUT FONetGrowth(r,t) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:2; endfor ; PUT / ;
-				PUT "Mortality" ,  @30; for t do PUT FOMortality(r,t) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:2; endfor ; PUT / ;
-				PUT "Gross_incr." ,  @30; for t do PUT ( FONetGrowth(r,t) + FOMortality(r,t) ) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:2; endfor ; PUT / ;
-				PUT "Gross_incr._%" ,  @30; for t do PUT ( FONetGrowth(r,t) + FOMortality(r,t) ) * Power( FOStandingVol(r,t) + 0.01, -1 ) * 100: >10:2; endfor ; PUT / ;
-				PUT "Sawtimber" ,  @30; for t do PUT FOTimber(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "Pulpwood" ,  @30; for t do PUT FOPulpw(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "AgeFinalFell" ,  @30; for t do PUT FOAgeFina(r,t) * Power( FOm3VolTotFina(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "AgeThin" ,  @30; for t do PUT FOAgeThin(r,t) * Power( FOm3VolTotThin(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "DiaFinalFell" ,  @30; for t do PUT FODiaFina(r,t) * Power( FOm3VolTotFina(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "DiaThinning" ,  @30; for t do PUT FODiaThin(r,t) * Power( FOm3VolTotThin(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "RelAboveLSAPriv" ,  @30; for t do PUT FORelVolAboveLSAPriv(r,t) : >10:2; endfor ; PUT / ; 
-				PUT "RelAboveLSANonPriv" ,  @30; for t do PUT FORelVolAboveLSANonPriv(r,t) : >10:2; endfor ; PUT / ; 
-				PUT "TotResìduesFF" ,  @30; for t do PUT FOResStmTot(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "TotStumpsFF" ,  @30; for t do PUT FOResRotTot(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "AvailResìdues" ,  @30; for t do PUT FOResStmAvailable(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "AvailStumps" ,  @30; for t do PUT FOResRotAvailable(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
-				PUT "Area_Age40" ,  @30; for t do PUT FOAge40(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "Area_Age80" ,  @30; for t do PUT FOAge80(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "Area_Age120" ,  @30; for t do PUT FOAge120(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "Area_Age120+" ,  @30; for t do PUT FOAge121(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "Area_OldForest" ,  @30; for t do PUT FOOldForest(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				PUT "MvolFina" ,  @30; for t do PUT FOm3VolTotFina(r,t) * Power( FOareaTotFinal(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				PUT "MvolThin" ,  @30; for t do PUT FOm3VolTotThin(r,t) * Power( FOareaTotThin(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
-				for tc do
-					PUT BiotopNames(tc) ,  @30; for t do PUT FOBiotopAreas(tc,r,t) * 1.e-3: >10:0; endfor ; PUT / ;
-				endfor ;
-				for fut | CommodityType(fut) = 'P' or CommodityType(fut) = 'D' or  CommodityType(fut) = 'F' or CommodityType(fut) = 'E' do CurrFact := fut ; 
-					PUT "TotalOutput_", FormatString("%e", CurrFact ),  @30; for t do PUT FATotFactorOutput(fut,r,t) * 1.e-6: >10:3; endfor ; PUT / ;
-				endfor ; 
-			
-			PUT /; ! Miscellenaneous
-			
-			for (fin,ft) | fin in TrpFactor and sum[ fut, abs( TabInUtFacilityType(ft,fin,fut) ) ] do
-				PUT FormatString("%e", ft )," ", FormatString("%e", fin ), @30; 
-					for t do PUT FAToUse(fin,ft,r,t) * 1.e-6: >10:3; endfor ; PUT / ;
-			endfor ; 
-			
-			endfor ; ! End regions
-			
-			putclose ResultFile ;
-		}
-	}
-	Procedure ReadTaxplots {
-		Body: {
-			!-- Reading from Excel file data on NFI plots
-			axll::CloseAllWorkbooks;
-			
-			empty Plot ;
-			
-			/*if SLUorLNU = 'LNU' then
-				WorkbookName := "D:/BioFrameData/NFI1418.xlsx";
-			elseif SLUorLNU = 'ANU' then
-				WorkbookName := "C:/Users/jola/AIMMS_NiSync/SweFor4/BioFrameData/NFI1418.xlsx";
-			else
-				WorkbookName := "C:/Users/jola.old/jola/Projekt/LNU/BioFrame/BioFrameGAYA/NFI1418.xlsx";
-			endif ; */
-			!WorkbookName := Drive + "NFI1422.xlsx" ;
-			axll::OpenWorkBook(WorkbookFilename : WorkbookName);
-			
-			axll::SelectSheet(SheetName : "NFI1422_input" );
-			axll::ReadSet(SetReference: Plot, SetRange: "a2:a60000", ExtendSuperSets:  1, MergeWithExistingElements :  0, SkipEmptyCells:  0);
-			
-			axll::ReadList(IdentifierReference: Class, RowHeaderRange: "a2:a60000", DataRange: "b2:b60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: GpsEastI, RowHeaderRange: "a2:a60000", DataRange: "e2:e60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: GpsNorthI, RowHeaderRange: "a2:a60000", DataRange: "f2:f60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: Area, RowHeaderRange: "a2:a60000", DataRange: "d2:d60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: RND, RowHeaderRange: "a2:a60000", DataRange: "c2:c60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: PartOfSweden, RowHeaderRange: "a2:a60000", DataRange: "o2:o60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: NUTS2I, RowHeaderRange: "a2:a60000", DataRange: "p2:p60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: OwnTyp, RowHeaderRange: "a2:a60000", DataRange: "v2:v60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: mToRoad, RowHeaderRange: "a2:a60000", DataRange: "t2:t60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: Slope, RowHeaderRange: "a2:a60000", DataRange: "u2:u60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: SoilMoist, RowHeaderRange: "a2:a60000", DataRange: "n2:n60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: Vegetat, RowHeaderRange: "a2:a60000", DataRange: "j2:j60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: Altitude, RowHeaderRange: "a2:a60000", DataRange: "h2:h60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: InitDeadAbove, RowHeaderRange: "a2:a60000", DataRange: "x2:x60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: Peat, RowHeaderRange: "a2:a60000", DataRange: "l2:l60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: SIS, RowHeaderRange: "a2:a60000", DataRange: "s2:s60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: CountyI, RowHeaderRange: "a2:a60000", DataRange: "q2:q60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			axll::ReadList(IdentifierReference: Fjanara, RowHeaderRange: "a2:a60000", DataRange: "y2:y60000", ModeForUnknownElements : 0, MergeWithExistingData  : 0);
-			
-			axll::CloseWorkBook(WorkbookFilename : WorkbookName );
-		}
-	}
-	Procedure DisplacementModel {
-		Body: {
-			empty ProdStock, DpTreeDiffStock, DpSoilDiffSTock, DpProdDiffStock, DpSubProd, DPSubEol, DpOrganicSoil, NCE ;
-			
-			! Living tree carbon stock change
-			DpTreeDiffStock(t) := ( LivingC(t) - LivingC(t+1) )/PeriodLength(t) ;
-			
-			! Mineral soil carbon
-			DpSoilDiffSTock(t) := ( TotSoilC(t) - TotSoilC(t+1) )/PeriodLength(t) ;
-			
-			! Organic soil carbon
-			DpOrganicSoil(t) := sum[ (ia,j) |  
-				t >= pA(ia,j) and t <= pB(ia,j) and Peat(ia)="1", Scale(ia) * 0.88  * x(ia,j) ] ;
-			
-			! Product stock difference
-			ProdStock( (fut,1) | DispFacHalfLife(fut) ) := InitialProdStock(fut) * 0.5^(2.5/(DispFacHalfLife(fut))) + 
-				TotalSupply(fut,1) * PeriodLength(1) * CperUnit(fut) ;
-			ProdStock( (fut,t) | t > 1 and DispFacHalfLife(fut) ) := ProdStock(fut,t-1) * 0.5^(PeriodLength(t-1)/(DispFacHalfLife(fut))) +
-				TotalSupply(fut,t) * PeriodLength(t) * CperUnit(fut) ;
-			DpProdDiffStock(t) := -( sum[ fut, ProdStock(fut,t+1) - ProdStock(fut,t) ] )/PeriodLength(t) ;
-			
-			! Product substitution
-			DpSubProd(t) := - sum[ (fut), TotalSupply(fut,t) * CperUnit(fut) * DispFacProd(fut) ] ;
-			
-			! Product end of life
-			DPSubEol(t) := - sum[ fut | DispFacHalfLife(fut), 
-					ProdStock(fut,t) * ( 1- 0.5^(PeriodLength(t)/(DispFacHalfLife(fut)))  ) * DispFacEol(fut) ] /PeriodLength(t) ;
-			
-			! Total net carbon emissions
-			NCE(t) := DpTreeDiffStock(t)
-			+ DpSoilDiffSTock(t)
-			+ DpProdDiffStock(t)
-			+ DpSubProd(t)
-			+ DPSubEol(t)
-			+ DpOrganicSoil(t) ;
-		}
+		Comment: "Come here to define locations and transport costs between plots and locations and between locations";
 	}
 	Procedure SetSetAsides {
 		Body: {
+			empty hasSetAside;
+			hasSetAside( ia | ( CountyI(ia) >= 20 and Age(ia,First(j),1) >= 140 + 20 or CountyI(ia) < 20 and Age(ia,First(j),1) >= 120 + 20 ) or
+				NatureProt(ia) <> 'NoNa' ) := 1 ;
+			
 			for ia do
 				CurrJ := First(j) ;
 			if Age(ia,CurrJ,1) >= 100 then
@@ -3198,827 +1851,1687 @@ Model Main_SweFor {
 			endfor ;
 		}
 	}
-	Procedure SolveGMPrnd {
+	Procedure SolveMaxNetSurplus {
 		Body: {
-			!-- Solve with SuperFacilities
-			TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' ) := q0(fut,t);
-			ActiveFacility := SuperFacility ;
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F' and t < LastPeriod  ) :=
-				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
-				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			statusmessage('Solving: SuperFacilities' );
-			solve MaxNetSurplus ;
-			PutRegionResults;
-			halt;
-			
-			! Generate with ordinary facilities
-			ActiveFacility := Facility - SuperFacility ;
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F' and t < LastPeriod  ) :=
-				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
-				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			SweForGMP := GMP::Instance::Generate( MaxNetSurplus ) ;
-			
-			ParTmp := 1;
-			ObjectiveValue := 0;
-			iter1 := 1;
-			SaveX(ia,j) := 0;
-			while ParTmp > 1.e-5 do
-				for (ia,j) | j in xToRun(ia) and x(ia,j) = 0 and SaveX(ia,j) = 0 do
-					GMP::Column::SetUpperbound( SweForGMP, x(ia,j), 0 );
-				endfor;
-				SaveX( (ia,j) | x(ia,j) ) := 1;
-				for (ia,j) | j in xToRun(ia) and SaveX(ia,j) = 0 and uniform(0,1) < 0.3 do
-					GMP::Column::SetUpperbound( SweForGMP, x(ia,j), 1 );
-				endfor;
-				GMP::Instance::Solve( SweForGMP );
-				statusmessage( iter1 + " " + GMP::Solution::GetObjective( SweForGMP, 1 ) );
-				ParTmp := abs[ ( ObjectiveValue - MaxNetSurplus.Objective ) / ( ObjectiveValue + 1.e-4) ];
-				ObjectiveValue := MaxNetSurplus.Objective;
-				iter1 += 1;
-			endwhile;
-			CaseFileSave( "Solution2.data", SolutionIdentifiers ) ;
-			PutRegionResults;
-		}
-	}
-	Procedure SolveGMPrc {
-		Body: {
-			!-- Solve with SuperFacilities
-			ActiveFacility := SuperFacility ;
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F' and t < LastPeriod  ) :=
-				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
-				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			statusmessage('Solving: SuperFacilities' );
-			solve MaxNetSurplus ;
-			if MaxNetSurplus.Objective = NA then
-				dialogmessage('SuperFacilities failed!');
+			!-- Add lower bounds for 'D' and 'F' commodity types
+			!-- Start from old x solution if indicated by RunMode 
+			empty x;
+			if RunMode = 'GMP' then 
+				SolveGMP;
 				halt;
+			elseif RunMode = '1old' then 
+				CaseFileLoad( "Solution1.data" ) ;
+				xToRun(ia ) -= { j | x(ia,j).level = 0 };
+			elseif RunMode = '2old' then 
+				CaseFileLoad( "Solution2.data" ) ;
+				xToRun(ia ) -= { j | x(ia,j).level = 0 };
+			elseif RunMode = '2fix' then 
+				CaseFileLoad( "BAU_V12.1.data" ) ;
+				xToRun(ia ) -= { j | x(ia,j).level = 0 };
+				x( (ia,j) | j in xToRun(ia) ).Upper := x(ia,j);
+				x( (ia,j) | j in xToRun(ia) ).Lower := x(ia,j);
 			endif;
 			
-			!-- Generate with ordinary facilities
-			statusmessage('Loading problem All facilities' );
-			ActiveFacility := Facility - SuperFacility ;
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F' and t < LastPeriod  ) :=
+			! Set lower bound on commodities with a particular demand ('D') or demand at facility ('F')
+			empty TotalSupply,NetOutputAtFacility;
+			TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' ) := q0(fut,t);
+			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F'  ) := 
 				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
 				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			SweForGMP := GMP::Instance::Generate( MaxNetSurplus ) ;
 			
-			SaveX(ia,j) := 0;
-			for (ia,j) | j in xToRun(ia) and x(ia,j) = 0 and SaveX(ia,j) = 0 do
-				GMP::Column::SetUpperbound( SweForGMP, x(ia,j), 0 );
-			endfor;
-			SaveX( (ia,j) | x(ia,j) ) := 1;
-			for ia do
-				CurrxToRun := NBest( j | j in xToRun(ia) and SaveX(ia,j) = 0 , x.ReducedCost(ia,j), 500 );
-				for j | j in CurrxToRun do
-					SaveX(ia,j) := 1;
-					GMP::Column::SetUpperbound( SweForGMP, x(ia,j), 1 );
-				endfor;
-			endfor;
-			
-			!-- Solve reduced problem
-			statusmessage('Solving All facilities' );
-			GMP::Instance::Solve( SweForGMP );
-			
+			!-- Solve MaxNetSurplus and solve the x solution in file Solution2.data
+			statusmessage('Solving: ' + RunMode);
+			solve MaxNetSurplus ;
 			if MaxNetSurplus.Objective = NA then
-				dialogmessage('No solution available!');
+				dialogmessage('No solution found');
 				halt;
 			else
-				CaseFileSave( "Solution2.data", SolutionIdentifiers ) ;
-				PutRegionResults;
+				statusmessage('Solved: ' + RunMode);
+				if RunMode = 'all' then 
+					CaseFileSave( "Solution2.data", SolutionIdentifiers ) ;
+				endif;
 			endif;
 		}
+		Comment: "Come here to set some bounds, possibly start from old solution and run the MaxNetSurplus problem";
 	}
-	Procedure SolveGMP {
+	Procedure RunStandard {
 		Body: {
-			TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' or CommodityType(fut) = 'F' ) := q0(fut,t);
+			!-- Read and save forest data
+			FileNames('Forest')     		:= "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
+			FileNames('Factors')    		:= "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
+			FileNames('ForestSave') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/NVKTest.data";
+			!-- Distance matrices
+			FileNames('DistancesLocToLoc') 	:= "D:/Users/ljeraa/BioFrame/SweForData/Cement/DistancesLocToLocWithTerminals.csv";
+			FileNames('DistancesPlotToLoc')	:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/PlotToLoc.csv";
+			!-- Read forest reltaed data
+			FileNames('ForestMerge') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/NVK.data";
+			FileNames('SegmentData') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/SegmentData_new.csv";
+			!-- Facilities and input/output related data
+			FileNames('InputOutputData')	:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/InputOutputV2601.xlsx";
+			FileNames('FacilityData')   	:= "D:/Users/ljeraa/BioFrame/SweForData/Cement/SweForFacilytyData#3.xlsx";
+			!-- Output results
+			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_BAU.csv";
 			
-			ActiveFacility := SuperFacility ;
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F' and t < LastPeriod  ) :=
-				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
-				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			
-			statusmessage('Solving: SuperFacilities' );
-			solve MaxNetSurplus ;
-			empty SaveX;
-			SaveX(ia,j) := x(ia,j);
-			
-			ActiveFacility := Facility - SuperFacility ;
-			NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F' and t < LastPeriod  ) :=
-				q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
-				sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
-			
-			x.Upper( (ia,j) | j in xToRun(ia) and x(ia,j) = 0) := 0;
-			for ia do
-				CurrJ := First( j | x(ia,j) > 0 );
-				x(ia,Currj) := 1 - sum[ j | j in xToRun(ia) and not CurrJ, x(ia,j) ];
-			endfor;
-			solve MaxNetSurplus ;
-			dialogmessage( MaxNetSurplus.Objective );
-			
-			InputAtFacility.Upper( (fin,fa,t) | RelevantInput(fin,fa) ) := InputAtFacility(fin,fa,t);
-			InputAtFacility.Lower( (fin,fa,t) | RelevantInput(fin,fa) ) := InputAtFacility(fin,fa,t);
-			x.Upper( (ia,j) | j in xToRun(ia) ) := 1;
-			x.Lower( (ia,j) | j in xToRun(ia) ) := 0;
-			solve MaxNetSurplus ;
-			dialogmessage( MaxNetSurplus.Objective );
-			
-			InputAtFacility.Upper( (fin,fa,t) | RelevantInput(fin,fa) ) := 1e9;
-			InputAtFacility.Lower( (fin,fa,t) | RelevantInput(fin,fa) ) := 0;
-			x.Upper( (ia,j) | j in xToRun(ia) and x(ia,j) = 0) := 0;
-			solve MaxNetSurplus ;
-			dialogmessage( MaxNetSurplus.Objective );
-			
-			halt;	
-			
-			
-			
-			
-			ParTmp := 1;
-			ObjectiveValue := 0;
-			iter1 := 1;
-			while ParTmp > 1.e-4 do
-			
-				x.Upper( (ia,j) | j in xToRun(ia) ) := min[ 1, x(ia,j) + 1e-4 ];
-				x.Lower( (ia,j) | j in xToRun(ia) ) := max[ 0, x(ia,j) - 1e-4 ];
-				solve MaxNetSurplus ;
-				statusmessage( MaxNetSurplus.Objective );
-				InputAtFacility.Upper( (fin,fa,t) | RelevantInput(fin,fa) ) := InputAtFacility(fin,fa,t);
-				InputAtFacility.Lower( (fin,fa,t) | RelevantInput(fin,fa) ) := InputAtFacility(fin,fa,t);
-				x.Upper( (ia,j) | j in xToRun(ia) ) := 1;
-				x.Lower( (ia,j) | j in xToRun(ia) ) := 0;
-				solve MaxNetSurplus ;
-				statusmessage( MaxNetSurplus.Objective );
-				InputAtFacility.Upper( (fin,fa,t) | RelevantInput(fin,fa) ) := 1e9;
-				InputAtFacility.Lower( (fin,fa,t) | RelevantInput(fin,fa) ) := 0;
-				iter1 += 1;
-				ParTmp := abs[ ( ObjectiveValue - MaxNetSurplus.Objective ) / ( ObjectiveValue + 1.e-4) ];
-				ObjectiveValue := MaxNetSurplus.Objective;
-			
-			endwhile;
+			!--- All data preparation including saving
+			statusmessage("ReadingGAYData") ;
+			!ReadAndSaveGAYAData;
+			statusmessage("Reading StandAndPlotData") ;
+			ReadStandAndPlotData ;
+			statusmessage("ReadStandAndPlotData OK") ;
+			ReadIO;
+			ReadFacilities ;
+			statusmessage("ReadIOandFacilities OK") ;
+			ReadDistances ;
+			statusmessage("ReadDistances OK") ;
+			SetSets;
+			statusmessage("SetSets OK") ;
+			ManageTransports ;
+			statusmessage('ManageTransports completed') ;
+			SolveMaxNetSurplus ;
 			PutRegionResults;
-			halt;	
-			
-			statusmessage('Solving: all Facilities' );
-			solve MaxNetSurplus ;
-			halt;
-			
-			ActiveFacility := Facility - SuperFacility ;
-			ForestCValuePerTonC := 1200;
-			SweForGMP := GMP::Instance::Generate( MaxNetSurplus ) ;
-			statusmessage( 'Solving: start' );
-			GMP::Instance::Solve( SweForGMP );
-			
-			ForestCValuePerTonC := 1200;
-			iter1 := 1;
-			while iter1 < LastPeriod do
-				for t | t <= iter1 do
-					GMP::Coefficient::Set( SweForGMP, CValuePerT(t), DiffC(t), - ForestCValuePerTonC /PeriodLength(t) );
-				endfor;
-				statusmessage(iter1);
-				GMP::Instance::Solve( SweForGMP ); 
-				iter1 += 1;
-			endwhile;
-			halt;
-			
-				for (ia,j) | j in xToRun(ia) do
-					GMP::Column::Freeze( SweForGMP, x(ia,j), SaveX(ia,j) );
-				endfor;
-				dialogmessage( GMP::Solution::GetObjective( SweForGMP, 1 ) );
-			
-			for (ia,j) | j in xToRun(ia) do
-				GMP::Column::UnFreeze( SweForGMP, x(ia,j) );
-			endfor;
-			GMP::Instance::Solve( SweForGMP );
-			dialogmessage( GMP::Solution::GetObjective( SweForGMP, 1 ) );
-			halt;
-			
-			!-- Step 2: Solve with new parameter */
-			ForestCValuePerTonC := 1200;
-			for t | t < LastPeriod do
-				GMP::Coefficient::Set( SweForGMP, CValuePerT(t), DiffC(t), - ForestCValuePerTonC /PeriodLength(t) );
-			endfor;
-			statusmessage('Solving: 1200');
-			GMP::Instance::Solve( SweForGMP ); 
-			ObjectiveValue := GMP::Solution::GetObjective( SweForGMP, 1 );
-			dialogmessage( ObjectiveValue );
 		}
 	}
-	Procedure SolveGMPredcost {
-		Body: {
-			!-- Set up problem
-			empty x, x.ReducedCost, SaveRC;
-			
-			!-- Step 1: derive shadow prices to start with after running:
-			!-- (i) w. SweForGMP, (ii) running with SweForGMP
-			TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' or CommodityType(fut) = 'F' ) := q0(fut,t);
-			ActiveFacility := Facility - SuperFacility ;
-			statusmessage('Solving 1');
-			SweForGMP := GMP::Instance::Generate( MaxNetSurplus, "MaxNetSurplus" ) ;
-			
-			!-- Step 2: 
-			Iter1 := 0 ;
-			RelativeImprovm := 1 ;
-			while Iter1 < 5 do
-				statusmessage("Solving with All facilities - limited x variables: " + Iter1);
-				GMP::Instance::Solve( SweForGMP ); 
-				ObjectiveValue := GMP::Solution::GetObjective( SweForGMP, 1 );
-			!	dialogmessage( sum[ ia, Card(xToRun(ia)) ] + " " + sum[ ia, Card(CurrxToRun(ia)) ]  );
-				dialogmessage( ObjectiveValue );
-			/*	for ia | Card(xToRun(ia)) > Card(CurrxToRun(ia)) do
-					CurrJ :=argmin[ j | j in xToRun(ia) and not j in CurrxToRun(ia), 
-						sum[ (fin,t), Scale(ia) * Extraction(fin,ia,j,t) * PlotOutput(fin,ia,j,t) / PeriodLength(t) * (-ConHauling(fin,ia,t).ShadowPrice) ]
+	Section Reports {
+		DeclarationSection ProductCarbonParameters {
+			Parameter InitialProdStock {
+				IndexDomain: fut;
+			}
+			Parameter ProdStock {
+				IndexDomain: (fut,t);
+			}
+			Parameter DpTreeDiffStock {
+				IndexDomain: t;
+			}
+			Parameter DpSoilDiffSTock {
+				IndexDomain: t;
+			}
+			Parameter DpProdDiffStock {
+				IndexDomain: t;
+			}
+			Parameter DpSubProd {
+				IndexDomain: t;
+			}
+			Parameter DPSubEol {
+				IndexDomain: t;
+			}
+			Parameter DpOrganicSoil {
+				IndexDomain: t;
+				Text: "Yearly flux of C";
+			}
+			Parameter NCE {
+				IndexDomain: t;
+			}
+		}
+		DeclarationSection ForestCarbonParameters {
+			Parameter TonTSperM3fub {
+				Text: "Check that the number is the same as in sheet ConvFact";
+				Definition: 0.46;
+			}
+			Parameter CsharePertTS {
+				Definition: 0.5;
+			}
+			Parameter DecayRateLitter {
+				Definition: {
+					0.65091814
+					
+					!0.387278145 * 1.1
+					!!0.112873966
+					!r1/(1+Alfa*t*5)^Zeta
+				}
+			}
+			Parameter DecayRateCoarse {
+				Definition: {
+					/*2*( (1+Alfa*t*5)^(1-Zeta)-(1-min(5*t,TmaxNR)/TmaxNR)*(1+Alfa*(t*5-min(5*t,TmaxNR)) )^(1-Zeta) )/(Alfa*(1-Zeta)*TmaxNR) 
+					+ 2*( (1+Alfa*(t*5-min(5*t,TmaxNR)))^(2-Zeta) - (1+Alfa*t*5)^(2-Zeta) ) / ( Alfa^2*(1-Zeta)*(2-Zeta)*TmaxNR^2) 
+					+  (1-min(5*t,TmaxNR)/TmaxNR)^2
+					*/
+					0.028586756
+					
+					!0.03326031 * 1.1
+					!0.007667535  ! See SoilCarbon2
+					!0.005853959
+				}
+			}
+			Parameter DecayRateFine {
+				Definition: {
+					/* 2*( (1+Alfa*t*5)^(1-Zeta)-(1-min(5*t,TmaxR)/TmaxR)*(1+Alfa*(t*5-min(5*t,TmaxR)) )^(1-Zeta) )/(Alfa*(1-Zeta)*TmaxR) 
+					+ 2*( (1+Alfa*(t*5-min(5*t,TmaxR)))^(2-Zeta) - (1+Alfa*t*5)^(2-Zeta) ) / ( Alfa^2*(1-Zeta)*(2-Zeta)*TmaxR^2) 
+					+  (1-min(5*t,TmaxR)/TmaxR)^2
+					*/
+					0.091028101
+					
+					!0.162110997 * 1.1
+					!0.057703199  ! See SoilCarbon2
+					!0.057971155
+				}
+			}
+			Parameter InitalSoilCoarseC {
+				Definition: {
+					!0.397929837/DecayRateCoarse * 
+					60.68820513 
+					 *	sum[ (ia,j) | Peat(ia)="0" and FirstPeriod >= pA(ia,j) and FirstPeriod <= pB(ia,j), Scale(ia)* x(ia,j) ]
+				}
+			}
+			Parameter InitalSoilFineC {
+				Definition: {
+					!0.797305816  / DecayRateFine * 
+					 15.24429915
+					* 	sum[ (ia,j) | Peat(ia)="0" and FirstPeriod >= pA(ia,j) and FirstPeriod <= pB(ia,j), Scale(ia)* x(ia,j) ]
+				}
+			}
+			Parameter InitalSoilLitterC {
+				Definition: {
+					! 082195621  / DecayRateLitter * 
+					8.597495726 
+					* sum[ (ia,j) | Peat(ia)="0" and FirstPeriod >= pA(ia,j) and FirstPeriod <= pB(ia,j), Scale(ia)* x(ia,j) ]
+				}
+				Comment: "ton C from Heureka based on productive forest, NFI 2014-2018  - 64 t/ha";
+			}
+			Parameter AfterHarvestCoarse {
+				IndexDomain: t;
+				Definition: {
+					sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TScoar(ia,j,t) * Scale(ia) * x(ia,j) ]
+					- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResRot', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
+				}
+			}
+			Parameter AfterHarvestFine {
+				IndexDomain: t;
+				Definition: {
+					sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TSfine(ia,j,t) * Scale(ia) * x(ia,j) ]
+					- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResStm', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
+				}
+			}
+			Parameter LitterFall {
+				IndexDomain: t;
+				Text: "tDM per 5 year";
+				Definition: {
+					!( 2300 * FrPineshare(t)/100 + 2800 * FrSpruceshare(t)/100 + 2200 * FrDeciduousshare(t)/100 ) / 1000 * 
+					!sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), Scale(ia) * M3skMort(ia,j,t) * x(ia,j) ]
+					!* 2 
+					!+ sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), Scale(ia) * 1 * PeriodLength(t) * x(ia,j) ]
+					
+					sum[ (ia,j) | Peat(ia)="0" and t >= pA(ia,j) and t <= pB(ia,j), 
+					( ( ( 715.990 -10.205*Latitude(ia) + 4.193*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * ( m3Pin(ia,j,t) + m3Dec(ia,j,t) )  +
+					( -39.615 + 10.614*Hgv(ia,j,t) + 2.985*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * m3Spr(ia,j,t) )
+					 / (m3Vol(ia,j,t)+0.001) / 100. + 1 )
+					* PeriodLength(t) * Scale(ia) * x(ia,j) ]
+				}
+			}
+			Parameter LivingC {
+				IndexDomain: t;
+				Text: "ton C";
+				Definition: {
+					sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j),
+						Scale(ia) * TSbiom(ia,j,t)  * x(ia,j) ] * CsharePertTS
+					+
+					sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Dgv(ia,j,t)=0, 
+						Scale(ia) * 0.45 * m3Vol(ia,j,t) * x(ia,j) ]
+				}
+			}
+			Parameter TotSoilC {
+				IndexDomain: t;
+				Definition: {
+					if t = 1 then
+						InitalSoilCoarseC
+						+ InitalSoilFineC
+						+ InitalSoilLitterC
+					else
+						InitalSoilCoarseC * exp(-DecayRateCoarse*(t-1))
+						+ InitalSoilFineC * exp(-DecayRateFine*(t-1))
+						+ InitalSoilLitterC * exp(-DecayRateLitter*(t-1))
 						+
-						sum[ t, Scale(ia) * ( SCost(ia,j,t) + HCost(ia,j,t) )/ PeriodLength(t) * HarvestCost(t).ShadowPrice ]
-						+
-						sum[ t | OwnTyp(ia)="Private",  
-							AmenityValuePerM3 * PeriodLength(t) / (1+exp(-0.05*(age(ia,j,t)-LSA(ia)))) * 
-							m3Vol(ia,j,t) * Scale(ia) / PeriodLength(t) * AmenityPerT(t).ShadowPrice ] 
-						-
-						sum[ t | pA(ia,j) <= t and pB(ia,j) >= t, Test_AreaEq1(ia,t).ShadowPrice ]
-						+
-						sum[ t | t < LastPeriod and pB(ia,j) = t, (-Test_AreaFF(ia,t).ShadowPrice) ]
-						+
-						sum[ t | t < LastPeriod and pA(ia,j) = t+1, Test_AreaFF(ia,t).ShadowPrice ] 
-						];
-					CurrxToRun(ia) += CurrJ;
-					GMP::Column::Add( SweForGMP, x(ia,CurrJ) );
-					for (fin,t) | ExtractionRate(fin) do
-						GMP::Coefficient::Set( SweForGMP, ConHauling(fin,ia,t), x(ia,CurrJ), 
-							Scale(ia) * Extraction(fin,ia,CurrJ,t) * PlotOutput(fin,ia,CurrJ,t) / PeriodLength(t) );
-					endfor;
-					for t do
-						GMP::Coefficient::Set( SweForGMP, HarvestCost(t), x(ia,CurrJ), 
-							Scale(ia) * ( SCost(ia,CurrJ,t) + HCost(ia,CurrJ,t) )/ PeriodLength(t) );
-					endfor;
-					for t do
-						if OwnTyp(ia)="Private" then
-							GMP::Coefficient::Set( SweForGMP, AmenityPerT(t),x(ia,CurrJ),
-							AmenityValuePerM3 * PeriodLength(t) / (1+exp(-0.05*(age(ia,CurrJ,t)-LSA(ia)))) * 
-							m3Vol(ia,CurrJ,t) * Scale(ia) / PeriodLength(t) );
-						endif;
-					endfor;
-					for t | pA(ia,CurrJ) <= t and pB(ia,CurrJ) >= t do
-						GMP::Coefficient::Set( SweForGMP, Test_AreaEq1(ia,t), x(ia,CurrJ), 1 );
-					endfor;
-					for t | t < LastPeriod and pB(ia,CurrJ) = t do
-						GMP::Coefficient::Set( SweForGMP, Test_AreaFF(ia,t), x(ia,CurrJ), 1 );
-					endfor;
-					for t | t < LastPeriod and pA(ia,CurrJ) = t+1 do
-						GMP::Coefficient::Set( SweForGMP, Test_AreaFF(ia,t), x(ia,CurrJ), -1 );
-					endfor; 
-				endfor; */
-			!	dialogmessage( sum[ ia, Card(xToRun(ia)) ] + " " + sum[ ia, Card(CurrxToRun(ia)) ]  );
-				Iter1 += 1 ;
-			endwhile ;
-			
-			halt;
-			
-			statusmessage("Initial Problem solves with FixedDemand for 4 periods");
-			for (fut,t) | t <= 1 and CommodityType(fut) = 'D' or CommodityType(fut) = 'F' do
-				GMP::Column::SetUpperBound( SweForGMP, TotalSupply(fut,t), q0(fut,t) );
-				GMP::Column::SetLowerBound( SweForGMP, TotalSupply(fut,t), q0(fut,t) );
-			endfor;
-			halt; 
-			
-			FixedDemand(fut,t) := q0(fut,t);
-			for (fut,t) | t <= 4 and fut = 'Heat__' or fut = 'BioFue' do
-				GMP::Column::SetUpperBound( SweForGMP, TotalSupply(fut,t), 0 );
-				GMP::Row::SetRightHandSide( SweForGMP, ConMinSupply(fut,t), FixedDemand(fut,t) );
-				GMP::Column::SetUpperBound( SweForGMP, Export(fut,t), 0 );
-			endfor;	
-			/*SaveRC( (ia,j) | j in xToRun(ia) ) := x(ia,j).ReducedCost ;
-			CurrxToRun(ia) := NBest( j | j in xToRun(ia), SaveRC(ia,j), 
-				min[ 50, max[ Count( j | x(ia,j) > 0), Card(xToRun(ia)) ] ] );
-			for (ia,j) | j in xToRun(ia) and not j in CurrxToRun(ia) do
-				GMP::Column::SetUpperBound( SweForGMP, x(ia,j), 0 );
-			endfor ; */
-			statusmessage("Problem solved with FixedDemand = q0 and limited no. x");
-			GMP::Instance::Solve( SweForGMP ); 
-			halt;
-			
-			statusmessage("Problem solved with FixedDemand = q0 and fixed x");
-			FixedDemand(fut,t) := q0(fut,t);
-			for (fut,t) | fut = 'Heat__' or fut = 'BioFue' do
-				GMP::Row::SetRightHandSide( SweForGMP, ConMinSupply(fut,t), 0 );
-			endfor;	
-			for (ia,j) | j in xToRun(ia) do
-				ParTmp := x(ia,j);
-				GMP::Column::SetUpperBound( SweForGMP, x(ia,j), ParTmp  ) ;
-				GMP::Column::SetLowerBound( SweForGMP, x(ia,j), ParTmp  ) ;
-			endfor;
-			GMP::Instance::Solve( SweForGMP ); 
-			halt;
-			
-			iter1 := 0;
-			while iter1 < LastPeriod do
-				empty SaveRC;
-				SaveRC( (ia,j) | j in xToRun(ia) ) := x(ia,j).ReducedCost ;
-				xToRun(ia) := NBest( j | j in xToRun(ia), SaveRC(ia,j), 
-					min[ 200, max[ Count( j | x(ia,j) > 0), 0.9*Card(xToRun(ia)) ] ] );
-				/*for (ia,j) | j in CurrxToRun(ia) and not j in xToRun(ia) do
-					GMP::Column::SetUpperBound( SweForGMP, x(ia,j), 0 );
-				endfor ;
-				CurrxToRun(ia) := xToRun(ia); */
-			!	dialogmessage( " No. active x: " + sum[ ia, Card(xToRun(ia)) ] ); 
-				iter1 += 4;
-				for t | t <= iter1 do
-					FixedDemand( (fut,t) | CommodityType(fut) = 'D' or CommodityType(fut) = 'F' ) 
-						:= q0(fut,t);
-					for fut | CommodityType(fut) = 'D' or CommodityType(fut) = 'F' do
-						GMP::Row::SetRightHandSide( SweForGMP,
-							Export(fut,t), -FixedDemand(fut,t) );	
-					endfor;
-				endfor; 
-				statusmessage("t = " + iter1);
-				GMP::Instance::Solve( SweForGMP ); 
-			endwhile; 
-			
-			!!-- Select initial variable and solve
-			!for ia | PlotToRunx(ia) do ! Find variable with max NPV
-			!	for j | j in xToRun(ia) do
-			!		if Uniform(0,1) < 0.9 then GMP::Column::SetUpperBound( SweForGMP, x(ia,j), 0  ) ; endif ;
-			!	endfor ;
-			!!	RCvalue(j) := -1.e6 ;
-			!!	RCvalue( (j) | xToRun(ia,j)) := sum[ t, df(t) * ( sum[ fin, PlotOutput(fin,i,j,t) ] * p0(t,'sawnwd') - Cost0(ia,j,t) ) ] ;
-			!!	CurrJ := argmax[ j, RCvalue(j) ] ;
-			!!	for j | GMP::Column::SetUpperBound( SweForGMP, x(ia,CurrJ), 1  ) ;
-			!endfor ;
-			!
-			!Iter1 := 0 ;
-			!RelativeImprovm := 1 ;
-			!while RelativeImprovm > 0.01 do
-			!	GMP::Instance::Solve( SweForGMP );
-			!	for (ia,j) | xToRun(ia,j) do
-			!		GMP::Column::SetUpperBound( SweForGMP, x(ia,j), 0  ) ;
-			!	endfor ;
-			!	RelativeImprovm := 0 ;
-			!	for i | PlotToRunx(i) do
-			!		CurrJ := argmax[ j | j in xToRun(i), x(ia,j).ReducedCost ] ;
-			!		GMP::Column::SetUpperBound( SweForGMP, x(ia,CurrJ), 1  ) ;
-			!		RelativeImprovm += x(ia,CurrJ).ReducedCost ;
-			!	endfor ;
-			!	RelativeImprovm := RelativeImprovm / GMP::Solution::GetObjective( SweForGMP, 1 ) ;
-			!	Iter1 += 1 ;
-			!	statusmessage( GMP::Solution::GetObjective( SweForGMP, 1 ) + " " + RelativeImprovm + " " + Iter1 ) ;
-			!endwhile ;
-			!
-			!PutResults ;
-			!
-			!endif ;
-			!
+						sum[ t1 | t1 <= t-1,
+								AfterHarvestFine(t1) * exp(-DecayRateFine*(t-t1))
+								+ AfterHarvestCoarse(t1) * exp(-DecayRateCoarse*(t-t1))
+								+ LitterFall(t1) * exp(-DecayRateLitter*(t-t1))
+							] * CsharePertTS
+					endif ;
+				}
+			}
 		}
-	}
-	Procedure PutIndOutput {
-		Body: {
-			OutputFileResults := FileNames('IndOutput');
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			PUT "Facility", @13, "Process", @24, "Output", @30 ; for t do PUT t: >10:0; endfor ; PUT / ;
-			for (fut,fa) do
-			 	PeriodResult(t) := NetOutputAtFacility(fut,fa,t) + sum[ f2 | f2 in ActiveFacility, FacilityToFacility(fut,fa,f2,t) ] ;
-				if sum[ t | t < LastPeriod, PeriodResult(t) ] > 0 then
-					PUT fa, @14, CurrFT(fa), @20, fut:>10:0; for t | t < LastPeriod do PUT PeriodResult(t): >10:0; endfor ; PUT / ; 
-				endif ;
-			endfor ;
-			
-			putclose ResultFile ;
+		DeclarationSection ReportParameters {
+			Parameter FinalPrices {
+				IndexDomain: (fut,t);
+				Definition: {
+					min[ s | SupplToMarket(s,fut,t) > 0, p(s,fut,t) ];
+				}
+			}
+			Set Regions {
+				SubsetOf: Integers;
+				Index: r;
+				Definition: data { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };
+			}
+			Set County {
+				SubsetOf: Integers;
+				Index: y;
+				Definition: data { 1..30 };
+			}
+			Parameter CountyToRegion {
+				IndexDomain: (y,r);
+				Range: binary;
+				Property: NoSave;
+				InitialData: {
+					data 
+					{ (  1, 1 ) : 1,  (  1, 3 ) : 1,  (  2, 1 ) : 1,  (  3, 1 ) : 1,  (  3, 3 ) : 1,  (  4, 1 ) : 1,  (  4, 5 ) : 1,
+					  (  5, 1 ) : 1,  (  5, 5 ) : 1,  (  6, 1 ) : 1,  (  6, 5 ) : 1,  (  7, 1 ) : 1,  (  7, 5 ) : 1,  (  8, 1 ) : 1,
+					  (  8, 5 ) : 1,  (  9, 1 ) : 1,  (  9, 5 ) : 1,  ( 10, 1 ) : 1,  ( 10, 5 ) : 1,  ( 11, 1 ) : 1,  ( 11, 5 ) : 1,
+					  ( 12, 1 ) : 1,  ( 12, 5 ) : 1,  ( 13, 1 ) : 1,  ( 13, 5 ) : 1,  ( 14, 1 ) : 1,  ( 14, 4 ) : 1,  ( 15, 1 ) : 1,
+					  ( 16, 1 ) : 1,  ( 17, 1 ) : 1,  ( 17, 4 ) : 1,  ( 18, 1 ) : 1,  ( 18, 4 ) : 1,  ( 19, 1 ) : 1,  ( 19, 3 ) : 1,
+					  ( 20, 1 ) : 1,  ( 20, 3 ) : 1,  ( 21, 1 ) : 1,  ( 21, 3 ) : 1,  ( 22, 1 ) : 1,  ( 22, 2 ) : 1,  ( 23, 1 ) : 1,
+					  ( 23, 2 ) : 1,  ( 24, 1 ) : 1,  ( 24, 2 ) : 1,  ( 25, 1 ) : 1,  ( 25, 2 ) : 1 }
+				}
+				Comment: {
+					"Stockholms – 01; Uppsala – 03; Södermanlands – 04; Östergötlands – 05; Jönköpings – 06; Kronobergs – 07; Kalmar – 08; 
+					Gotlands – 09; Blekinge – 10; Skåne – 12; Hallands – 13; Västra Götalands – 14; Värmlands – 17; Örebro – 18;
+					Västmanlands – 19; Dalarnas – 20;Gävleborgs – 21; Västernorrlands – 22; Jämtlands – 23; Västerbottens – 24; Norrbottens - 25"
+				}
+			}
+			ElementParameter CurrPlotsInCounties {
+				IndexDomain: i;
+				Range: County;
+				Definition: CountyI(i);
+			}
+			Set PlotsInCounties {
+				IndexDomain: y;
+				SubsetOf: Plot;
+			}
+			Set PlotsInRegions {
+				IndexDomain: r;
+				SubsetOf: Plot;
+				Definition: {
+					!{ (i) | i in PlotsInCounties(1) } 
+					PlotsInCounties(14) + PlotsInCounties(13) 
+					!union[ i | i in PlotsInCounties(10)
+				}
+			}
+			Parameter ParTmp2;
+			Set Biotopes {
+				SubsetOf: Integers;
+				Index: tc;
+				Definition: data{ 1..6 };
+			}
+			StringParameter BiotopNames {
+				IndexDomain: tc;
+				Definition: data { 1 : "Tall",  2 : "Gran",  3 : "Babl",  4 : "Blnd",  5 : "Lovs",  6 : "Adel" };
+			}
 		}
-	}
-	Procedure PutBirchSawMillAnalysisData {
-		Body: {
-			OutputFileResults := FileNames('BirchSawmillOutput') ;
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			for fa | FacilityType(fa) = "sawmbe" do
-				put fa: >10:2;
-				put NetOutputAtFacility('Sawnbe',fa,1): >10:0 ;
-				put sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 100, 
-					max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * Scale(ia) ]*0.2: >10:0;
-				put sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 200, 
-					max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * Scale(ia) ]*0.2: >10:0;
-				put sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 300, 
-					max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * Scale(ia) ]*0.2: >10:0;
-				ParTmp := sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 300, 
-					max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * 
-					Scale(ia) * KmPlotToLoc(ia,CurrFacInLoc(fa))] ;
-				ParTmp2 := Power( sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 300, 
-					max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * 
-					Scale(ia) ] + 0.001,-1 );
-				put ParTmp * ParTmp2: >10:2;
-				put min( f | FacilityType(f) = 'PuChem' or FacilityType(f) = 'PuDiss' or FacilityType(f) = 'PuCTMP', 
-					KmLocToLoc(CurrFacInLoc(fa),CurrFacInLoc(f)) ): >10:2;
-			
-			PUT / ;  
-			
-			endfor;
-			
-			PUT / ;  
-			PUT/, "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
-			
-			PUT "Lövmassa till massaindustrin" ,  @30; 
-				for t do PUT sum( ft, FAToUse('Decids',ft,1,t)) * 1.e-6: >10:3; endfor ; PUT / ;
-			PUT "Bjorksågtimmer till massaindustrin" ,  @30; 
-				for t do PUT sum( ft | ft = 'PuChem' or ft = 'PuDiss' or ft = 'PuCTMP', 
-					FAToUse('BerTim',ft,1,t)) * 1.e-6: >10:3; endfor ; PUT / ;
-			PUT "Bjorksågtimmer till sågverken" ,  @30; 
-				for t do PUT FAToUse('BerTim','Sawmbe',1,t) * 1.e-6: >10:3; endfor ; PUT / ;
-			PUT "Hybridtimmer till sågverken" ,  @30; 
-				for t do 
-					PUT sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and 
-					count( t1 | t1 >= pA(ia,j) and t1 <= pB(ia,j) and Nratg(ia,j,t1) >= 8 and Nratg(ia,j,t1) <= 11) > 0,
-					Scale(ia) * PlotOutput('BerTim',ia,j,t) * x(ia,j) ]  * 1.e-6 *0.2: >10:3; 
-				endfor ; PUT / ;
-			PUT "Hybridmassaved till massaverk" ,  @30; 
-				for t do 
-					PUT sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and 
-					count( t1 | t1 >= pA(ia,j) and t1 <= pB(ia,j) and Nratg(ia,j,t1) >= 8 and Nratg(ia,j,t1) <= 11) > 0,
-					Scale(ia) * PlotOutput('Decids',ia,j,t) * x(ia,j) *0.2]  * 1.e-6: >10:3; 
-				endfor ; PUT / ;
-			PUT "Föryngring med hybrid (ha)" ,  @30; 
-				for t do 
-					PUT sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Nratg(ia,j,t) >= 8 and Nratg(ia,j,t) <= 11,
-					Scale(ia) * x(ia,j) ] *0.2  : >10:0; 
-				endfor ; PUT / ;
-			
-			PUT / ;  
-			
-			PUT/, "Period" ,  @30; for t do put t: >10:0; endfor ; PUT / ;
-			empty TableDA;
-			for (ia,j,t) | x(ia,j) do
-				DiaTab := max(1,round((min(40,Dgv(ia,j,t))-12)/2) + 1);
-				AgeTab := max(1,round((min(130,Age(ia,j,t))-30)/10) + 1);
-				TableDA(DiaTab,AgeTab,t) += Scale(ia) * PlotOutput('BerTim',ia,j,t) * x(ia,j) * 0.2;
-			endfor;
-			for (ac,dc) do
-				PUT "Age " + (ac*10+20) + "-" + (ac*10+30) + " Dia "  + (dc*2+8) + "-" + (dc*2+10) + ":",  @30; 
-				for t do PUT TableDA(dc,ac,t): >10:0; endfor; PUT / ;  
-			endfor;
-			
-			putclose ResultFile ;
+		DeclarationSection ResultForest {
+			Parameter FOSumTotArea {
+				Definition: sum[ ia, Scale(ia) ];
+			}
+			Parameter FOSumManagedArea {
+				Definition: sum[ (ia,j) | pA(ia,j) = 1, Scale(ia) * x(ia,j) ];
+			}
+			Parameter FOMgMArea {
+				IndexDomain: r;
+				Definition: {
+					sum[ (y,ia,j) | pA(ia,j) = 1 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * x(ia,j) ]
+				}
+			}
+			Parameter FOSAcompArea {
+				IndexDomain: r;
+				Definition: FOMgMArea(r) * SetasideRate;
+			}
+			Parameter FOSATotArea {
+				IndexDomain: r;
+				Definition: {
+					sum[ (y,ia,j) | pA(ia,j) = 1 and hasSetAside(ia) = 1
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r), Scale(ia) * x(ia,j) ]
+				}
+			}
+			Parameter FONoMgMnoSA {
+				IndexDomain: r;
+				Definition: {
+					sum[ (y,ia,j) | pA(ia,j) = 1 and hasSetAside(ia) = 0 and count( t, Treatm(ia,j,t) <> 'NM' ) = 0
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r), 	Scale(ia) * x(ia,j) ]
+				}
+			}
+			Parameter FOStandingVol {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and PlotsToCounties(ia,y) and CountyToRegion(y,r),
+						 Scale(ia) * m3Vol(ia,j,t) * x(ia,j) ]
+				}
+			}
+			Parameter FOnoSetAsideVol {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and hasSetAside(ia) = 0 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Vol(ia,j,t) * x(ia,j) ]
+				}
+			}
+			Parameter FOPine {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Pin(ia,j,t)  * x(ia,j) ]
+				}
+			}
+			Parameter FOSpruce {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Spr(ia,j,t)  * x(ia,j) ]
+				}
+			}
+			Parameter FODeciduous {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Dec(ia,j,t)  * x(ia,j) ]
+				}
+			}
+			Parameter FOm3HarvVolTot {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOm3VolTotFina {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOm3VolTotThin {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOm3VolTotPCT {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='Cl' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * m3Harv(ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOareaTotFinal {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOareaTotThin {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOareaTotFert {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and ( Treatm(ia,j,t)='Fe' or Treatm(ia,j,t)='FT' ) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOareaTotPCT {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and Treatm(ia,j,t)='Cl' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOTimber {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * ( PlotOutput('PinTim',ia,j,t) + PlotOutput('SprTim',ia,j,t) ) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOPulpw {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+					Scale(ia) * 
+					( PlotOutput('PinPuw',ia,j,t) + PlotOutput('SprPuw',ia,j,t) + PlotOutput('Decids',ia,j,t) ) 
+					* x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOResStmTot {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r),
+						Scale(ia) * PlotOutput('ResStm',ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOResRotTot {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * PlotOutput('ResRot',ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOResStmAvailable {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * 
+						PlotOutput('ResStm',ia,j,t) * Extraction('ResStm',ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOResRotAvailable {
+				IndexDomain: (r,t);
+				Range: free;
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * 
+						PlotOutput('ResRot',ia,j,t) * Extraction('ResRot',ia,j,t) * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FOMortality {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * M3skMort(ia,j,t)  * x(ia,j) ] / PeriodLength(t)
+				}
+			}
+			Parameter FONetGrowth {
+				IndexDomain: (r,t);
+				Definition: {
+					( FOStandingVol(r,t+1) - FOStandingVol(r,t) ) / PeriodLength(t) + 
+					( FOm3VolTotFina(r,t) + FOm3VolTotThin(r,t) + FOm3VolTotPCT(r,t) )
+				}
+			}
+			Parameter FOAgeFina {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * Age(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / ( PeriodLength(t) + 0.001 )
+				}
+			}
+			Parameter FOAgeThin {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * Age(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / (PeriodLength(t) + 0.001 )
+				}
+			}
+			Parameter FODiaFina {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Treatm(ia,j,t)='FF' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * Dgv(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / (PeriodLength(t) + 0.001 )
+				}
+			}
+			Parameter FODiaThin {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Treatm(ia,j,t)='Th' and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia) * Dgv(ia,j,t) * m3Harv(ia,j,t)  * x(ia,j) ] / (PeriodLength(t) + 0.001 )
+				}
+			}
+			Parameter FOAge40 {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Age(ia,j,t) <=40 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia)*x(ia,j) ]
+				}
+			}
+			Parameter FOAge80 {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Age(ia,j,t)>40 and Age(ia,j,t) <=80 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia)*x(ia,j) ]
+				}
+			}
+			Parameter FOAge120 {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Age(ia,j,t)>80 and Age(ia,j,t) <=120 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia)*x(ia,j) ]
+				}
+			}
+			Parameter FOAge121 {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | Age(ia,j,t)>120 and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia)*x(ia,j) ]
+				}
+			}
+			Parameter FOOldForest {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | ( CountyI(ia) >= 20 and Age(ia,First(j),1) >= 140 or 
+						CountyI(ia) < 20 and Age(ia,First(j),1) >= 120 )
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						Scale(ia)*x(ia,j) ]
+				}
+			}
+			Parameter FORelVolAboveLSAPriv {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)="Private" and Treatm(ia,j,t)='FF'
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r),
+						( Age(ia,j,t) - LSA(ia,j,t) )/LSA(ia,j,t) * m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] / 
+					(sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)="Private" and Treatm(ia,j,t)='FF'
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] + 0.1 ) 
+					* 100
+				}
+			}
+			Parameter FORelVolAboveLSANonPriv {
+				IndexDomain: (r,t);
+				Definition: {
+					sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)<>"Private" and Treatm(ia,j,t)='FF'
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r),
+						( Age(ia,j,t) - LSA(ia,j,t) )/LSA(ia,j,t) * m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] / 
+					(sum[ (y,ia,j) | j in xToRun(ia) and OwnTyp(ia)<>"Private" and Treatm(ia,j,t)='FF'
+						and PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						m3Vol(ia,j,t) * Scale(ia) * x(ia,j) ] + 0.1 ) 
+					* 100
+				}
+			}
+			Parameter FOBiotopAreas {
+				IndexDomain: (tc,r,t);
+			}
+			Parameter Xarea {
+				IndexDomain: (i,j);
+			}
 		}
-	}
-	Procedure PutPayArticleResults {
-		Body: {
-			OutputFileResults := "PayArticleOutput.txt" ;
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			
-			/*
-			PUT "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
-			
-			PUT "------------------------------------AllForest------------------------------------" ; PUT / ;
-			
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) >= 0, 
-				Scale(ia) * Dgv(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Diameter" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) >= 0, 
-				Scale(ia) * m3Dec(ia,j,t) * x(ia,j) ] ;
-			PUT "Deciduous(%)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1)*100:>10:0; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) >= 0, 
-				Scale(ia) * Age(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Age" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) >= 0, 
-				Scale(ia) * M3skMort(ia,j,t) * x(ia,j) ] ;
-			PUT "Mortality(m3/ha)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PUT "Hectares" ,  @30; PUT Test(1):>10:1; PUT / ;
-			
-			PUT "------------------------------------NoManagement------------------------------------" ; PUT / ;
-			
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 1, 
-				Scale(ia) * Dgv(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Diameter" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 1, 
-				Scale(ia) * m3Dec(ia,j,t) * x(ia,j) ] ;
-			PUT "Deciduous(%)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1)*100:>10:0; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 1, 
-				Scale(ia) * Age(ia,j,t) * x(ia,j) ] ;
-			PUT "Age" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 1, 
-				Scale(ia) * M3skMort(ia,j,t) * x(ia,j) ] ;
-			PUT "Mortality(m3/ha)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PUT "Hectares" ,  @30; PUT Test(1):>10:1; PUT / ;
-			
-			
-			PUT "------------------------------------Managed------------------------------------" ; PUT / ;
-			
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia)  <> 1, 
-				Scale(ia) * Dgv(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Diameter" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia)  <> 1, 
-				Scale(ia) * m3Dec(ia,j,t) * x(ia,j) ] ;
-			PUT "Deciduous(%)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1)*100:>10:0; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) <> 1, 
-				Scale(ia) * Age(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Age" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) <> 1, 
-				Scale(ia) * M3skMort(ia,j,t) * x(ia,j) ] ;
-			PUT "Mortality(m3/ha)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PUT "Hectares" ,  @30; PUT Test(1):>10:1; PUT / ;
-			
-			PUT "------------------------------------SA_Pay------------------------------------" ; PUT / ;
-			
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 0 and count( t1 | t1 <= 6, Treat0(ia,j,t1) > 1 ) = 0 and SetAsideIndex(ia),
-				Scale(ia) * Dgv(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Diameter" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 0 and count( t1 | t1 <= 6, Treat0(ia,j,t1) > 1 ) = 0 and SetAsideIndex(ia),
-				Scale(ia) * m3Dec(ia,j,t) * x(ia,j) ] ;
-			PUT "Deciduous(%)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1)*100:>10:0; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 0 and count( t1 | t1 <= 6, Treat0(ia,j,t1) > 1 ) = 0 and SetAsideIndex(ia),
-				Scale(ia) * Age(ia,j,t) * m3Vol(ia,j,t) * x(ia,j) ] ;
-			PUT "Age" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PutPeriod(t) := sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 0 and count( t1 | t1 <= 6, Treat0(ia,j,t1) > 1 ) = 0 and SetAsideIndex(ia),
-				Scale(ia) * M3skMort(ia,j,t) * x(ia,j) ] ;
-			PUT "Mortality(m3/ha)" ,  @30; for t do; PUT PutPeriod(t)*Test(t)^(-1):>10:1; endfor ; PUT / ;
-			PUT "Hectares" ,  @30; PUT Test(1):>10:1; PUT / ;
-			
-			putclose ResultFile ;
-			*/
+		DeclarationSection ResultFacilities {
+			Parameter FATotFactorOutput {
+				IndexDomain: (fut,r,t);
+				Definition: {
+					sum[ (y,fa) | (( fa in SuperFacility and y = 1 )) or CountyToRegion(y,r),
+						NetOutputAtFacility(fut,fa,t) + SideFactorOutput(fut,fa,t) ] / max[1,sum[y,CountyToRegion(y,r) ] ]
+					+
+					sum[ (y,fa,f2) | (( fa in SuperFacility and y = 1 ) or CountyToRegion(y,r)) and f2 in ActiveFacility,
+						FacilityToFacility(fut,fa,f2,t) ] / max[1,sum[y,CountyToRegion(y,r) ] ]
+					
+					! Condition removed: CurrLocationsInCounties(CurrFacInLoc(fa)) = y and ..
+				}
+			}
+			Parameter FATotFactorSupply {
+				IndexDomain: (fut,t);
+				Definition: sum[ fa, NetOutputAtFacility(fut,fa,t) + SideFactorOutput(fut,fa,t) ];
+			}
+			Parameter FAtonKm {
+				IndexDomain: (fin,r,t);
+				Definition: {
+					! From Plot	to processing facilty 
+					sum[ (y,ia,fa) | PlotsToCounties(ia,y) and CountyToRegion(y,r), 
+						PlotToFacility(fin,ia,fa,t) * KmPlotToLoc(ia,CurrFacInLoc(fa)) ]
+				}
+			}
+			Parameter FAton {
+				IndexDomain: (fin,r,t);
+				Definition: {
+					! From Plot	to processing facilty 
+					sum[ (y,ia,fa) | PlotsToCounties(ia,y) and CountyToRegion(y,r), PlotToFacility(fin,ia,fa,t) ]
+				}
+			}
+			Parameter FAToUse {
+				IndexDomain: (fin,ft,r,t) | fin in TrpFactor;
+				Definition: {
+					sum[ (y,ia,fa) | PlotsToCounties(ia,y) and CountyToRegion(y,r)
+						and RelevantInput(fin,fa)
+						and CurrFT(fa) = ft, PlotToFacility(fin,ia,fa,t) ]
+					+
+					sum[ (y,f1,f2) |  ( ( f1 in SuperFacility and y = 1) or CountyToRegion(y,r) )
+						and RelevantOutput(fin,f1) and RelevantInput(fin,f2)
+						and CurrFT(f2) = ft,
+						FacilityToFacility(fin,f1,f2,t)]  / max[1,sum[y,CountyToRegion(y,r) ] ]
+				}
+			}
 		}
-	}
-	Procedure PutCAfBio {
-		Body: 
->>>>>>>>>>Invalid_Syntax
-			/*
-			OutputFileResults := "CAfBioResults.txt" ;
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			for r | Card(CountyToRegion(y,r)) > 0 do
-			
-			PUT //, "Region ", r:>3:0, @10, FOManagedAreaRegion(r):>10:0, @30; for y | y in CountyToRegion(y,r) do PUT y:>3:0; endfor ; PUT / ;
-			PUT "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
-			
-				for t do PutPeriod(t) := sum[ y | y in CountyToRegion(y,r), FOTimber(y,t) ]; endfor ;
-				PUT "Sawtimber" ,  @30; for t do PUT PutPeriod(t) * 1.e-6: >10:2; endfor ; PUT / ;
-			
-				for t do PutPeriod(t) := sum[ y | y in CountyToRegion(y,r), FOPulpw(y,t) ]; endfor ;
-				PUT "Pulpwood" ,  @30; for t do PUT PutPeriod(t) * 1.e-6: >10:2; endfor ; PUT / ;
-			
-				for fin | CommodityType(fin) = '-' do CurrFact := fin ; 
-					for t do PutPeriod(t) := sum[ y | y in CountyToRegion(y,r),  FAtonToEnergy(fin,y,t) ]; endfor ;
-					PUT "ToEnergy_", FormatString("%e", CurrFact ),  @30; for t do PUT PutPeriod(t) * 1.e-6: >10:3; endfor ; PUT / ;
+		Procedure PutRegionResults {
+			Body: {
+				DisplacementModel ;
+				BiotopAreas ;
+				
+				OutputFileResults := FileNames('RegionResult') ;
+				ResultFile.PageWidth := 600 ;
+				PUT ResultFile ;
+				
+				PUT "SumTotArea",@20,FOSumTotArea:>20:0, / ;
+				PUT "SumManagedArea",@20,FOSumManagedArea:>20:0, / ;
+				PUT "NoActivePlots",@20,sum[ ia, 1 ]:>20:0, / ;
+				PUT "NoActivex",@20,Count( (ia,j), j in xToRun(ia) and x(ia,j).Upper = 1 ):>20:0, / ;
+				PUT "NoOfTrpActivities",@20,( sum[ (fin,ia,fa), RelevantTrpFromPlot(fin,ia,fa) ] 
+					+ sum[ (fut,f1,f2) | f1 in ActiveFacility and f2 in ActiveFacility, RelevantTrpBetwFac(fut,f1,f2)  ] ):>20:0, / ;
+				PUT "ObjectiveValue",@20,MaxNetSurplus.Objective * 1.e-9:>20:4, / ;
+				PUT "NPVRevenue",@20,sum[ t, df(t)* RevenuePerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
+				PUT "NPVCosts",@20,sum[ t, df(t)* CostsPerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
+				PUT "NPVAmenity",@20,sum[ t, df(t)* AmenityPerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
+				PUT "NPVTrade",@20,sum[ t, df(t)* TradePerT(t) ] * PeriodLength(1) * 1.e-6:>20:0, / ;
+				PUT "NPVCvalue",@20,sum[ t, CValuePerT(t) * df(t)] *  1.e-6 * PeriodLength(1):>20:0, / ;
+				PUT "SetAsideValue",@20,df(FirstPeriod) * SetAsideValue * PeriodLength(1) * 1.e-6:>20:0, / ;
+				PUT "ForestEndValue",@20,df(LastPeriod) * EndingValue * PeriodLength(1) * 1.e-6:>20:0, / ;
+				
+				PUT "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
+				PUT "HarvestCost" ,  @30; for t do PUT HarvestCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
+				PUT "TrpCost" ,  @30; for t do PUT TrpCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
+				PUT "FacilityCost" ,  @30; for t do PUT FacilityCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
+				PUT "CapacityCost" ,  @30; for t do PUT CapacityCost(t) * 1.e-6: >10:0; endfor ; PUT / ;
+				PUT "CarbonValue", @30; for t do PUT CValuePerT(t) *  1.e-6: >10:0; endfor ; PUT / ;
+				
+				PUT /; ! Non regional values
+				
+				for fut | CommodityType(fut) = 'P' or CommodityType(fut) = 'D' or  CommodityType(fut) = 'F' do CurrFact := fut ; 
+						PUT "Prices_", FormatString("%e", CurrFact ),  @30; for t do PUT p0(fut,t) : >10:0; endfor ; PUT / ;
+				endfor ;  
+				for fut | Elasticity(fut)  do CurrFact := fut ; 
+						PUT "Prices_", FormatString("%e", CurrFact ),  @30; for t do PUT FinalPrices(fut,t) : >10:0; endfor ; PUT / ;
 				endfor ; 
-			
-				for fin | CommodityType(fin) = '-' do CurrFact := fin ; 
-					for t do PutPeriod(t) := sum[ y | y in CountyToRegion(y,r),  FAtonToNonEnergy(fin,y,t) ]; endfor ;
-					PUT "ToNonEnergy_", FormatString("%e", CurrFact ),  @30; for t do PUT PutPeriod(t) * 1.e-6: >10:3; endfor ; PUT / ;
+				for fin | MaxImports(fin,1) do CurrFact := fin ; 
+					PUT "Import_", FormatString("%e", CurrFact ),  @30; 
+						for t do PUT Import(fin,t) * 1.e-6: >10:3; endfor ; PUT / ;
 				endfor ; 
-			
+				for fut | CommodityType(fut) = 'P' or CommodityType(fut) = 'D' or  CommodityType(fut) = 'F' or CommodityType(fut) = 'E' do CurrFact := fut ; 
+					PUT "SupplyToMarket_", FormatString("%e", CurrFact ),  @30; for t do PUT FATotFactorSupply(fut,t) * 1.e-6: >10:3; endfor ; PUT / ;
+				endfor ; 
+				
+				PUT / ;
+				PUT "NCE" ,  @30; for t do PUT NCE(t) * 1.e-6: >10:2; endfor ; PUT / ; 
+				PUT "DpTreeDiffStock" ,  @30; for t do PUT DpTreeDiffStock(t) * 1.e-6: >10:2; endfor ; PUT / ; 
+				PUT "DpSoilDiffSTock" ,  @30; for t do PUT DpSoilDiffSTock(t) * 1.e-6: >10:2; endfor ; PUT / ; 
+				PUT "DpProdDiffStock" ,  @30; for t do PUT DpProdDiffStock(t) * 1.e-6: >10:2; endfor ; PUT / ; 
+				PUT "DpSubProd" ,  @30; for t do PUT DpSubProd(t) * 1.e-6: >10:2; endfor ; PUT / ; 
+				PUT "DPSubEol" ,  @30; for t do PUT DPSubEol(t) * 1.e-6: >10:2; endfor ; PUT / ; 
+				PUT "DpOrganicSoil" ,  @30; for t do PUT DpOrganicSoil(t) * 1.e-6: >10:2; endfor ; PUT / ; 
 				PUT "LivingC" ,  @30; for t do PUT LivingC(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-				PUT "TotSoilC" ,  @30; for t do PUT TotSoilC(t) * 1.e-6: >10:2; endfor ; PUT / ; 
-			
-			endfor ; ! End regions
-<<<<<<<<<<Invalid_Syntax
-	}
-	Procedure PutCountyResults {
-		Body: {
-			OutputFileResults := "RCP4p5.SSP3_County.txt" ;
-			ResultFile.PageWidth := 240 ;
-			PUT ResultFile ;
-			
-			PUT "Period ." ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
-			/*
-			empty CountyResult ;
-			CountyResult(o,t) := sum[ (ia,j) | i in  PlotInNUTS2(o), m3Harv(i,j,t) * AreaScale/PeriodLength(t) * Area(i) * x(i,j) ] ;
-			for o do PUT FormatString("%e", o )," TotalHarvest ", @30; 
-				for t do PUT CountyResult(o,t):>10:0; endfor ; PUT / ;
-			endfor ;
-			
-			empty CountyResult ;
-			!CountyResult(o,t) := sum[ (fin,i,j)| i in  PlotInCounty(o) and fin = "resids" and Treat0(i,j,t)="Fina" and GROTOK(i), 
-			!		(1.-nonExtraction(fin,i,j,t)) * PlotOutput(fin,i,j,t) * AreaScale/PeriodLength(t) * Area(i) * x(i,j) ] ;
-			for o do PUT FormatString("%e", o )," AvailGROT ", @30; 
-				for t do PUT CountyResult(o,t):>10:0; endfor ; PUT / ;
-			endfor ;
-			
-			empty CountyResult ;
-			CountyResult(o,t) := sum[ (i,j)| i in  PlotInNUTS2(o) and Treat0(i,j,t)="Fina" , m3Harv(i,j,t) * AreaScale/PeriodLength(t) * Area(i) * x(i,j) ]  ;
-			for o do PUT FormatString("%e", o )," FinalFellingVol ", @30; 
-				for t do PUT CountyResult(o,t):>10:0; endfor ; PUT / ;
-			endfor ;
-			
-			empty CountyResult ;
-			CountyResult(o,t) := sum[ (i,j)| i in  PlotInNUTS2(o) and Treat0(i,j,t)="Fina" , AreaScale/PeriodLength(t) * Area(i) * x(i,j) ]  ;
-			for o do PUT FormatString("%e", o )," FinalFellingArea ", @30; 
-				for t do PUT CountyResult(o,t):>10:0; endfor ; PUT / ;
-			endfor ;
-			
-			empty CountyResult ;
-			CountyResult(o,t) :=  sum[ (i,j)| i in  PlotInNUTS2(o), m3Vol(i,j,t) * AreaScale/PeriodLength(t) * Area(i) * x(i,j) ]  ;
-			for o do PUT FormatString("%e", o )," StandingVol ", @30; 
-				for t do PUT CountyResult(o,t):>10:0; endfor ; PUT / ;
-			endfor ;
-			
-			for fin | MaxTrpDistance(fin) do
-				empty CountyResult ;
-				CountyResult(o,t) :=  sum[ (i,f)| i in  PlotInNUTS2(o), PlotToFacility(fin,i,f,t) ] ;
-				for o do PUT FormatString("%e", o )," PlotToFaci ", FormatString("%e", fin ), @30; 
-					for t do PUT CountyResult(o,t):>10:0; endfor ; PUT / ;
+				PUT "AfterHarvestFine" ,  @30; for t do PUT AfterHarvestFine(t) * 1.e-6 * 0.2: 10:2; endfor ; PUT / ; 
+				PUT "AfterHarvestCoarse" ,  @30; for t do PUT AfterHarvestCoarse(t) * 1.e-6 * 0.2: >10:2; endfor ; PUT / ; 
+				PUT "LitterFall" ,  @30; for t do PUT LitterFall(t) * 1.e-6 * 0.2: >10:2; endfor ; PUT / ; 
+				PUT "TotSoilC" ,  @30; for t do PUT TotSoilC(t) * 1.e-6: >10:2; endfor ; PUT / ;
+				
+				for r | sum[ y, CountyToRegion(y,r) ] do
+				
+				PUT /, "Region ", @30; for y | CountyToRegion(y,r) do PUT y:>3:0; endfor ; PUT / ;
+				
+				PUT "MgMArea SAcompArea SATotArea NoMgMnoSA", @40;
+					PUT FOMgMArea(r):<10:0; PUT FOSAcompArea(r):<10:0; PUT FOSATotArea(r):<10:0; PUT FONoMgMnoSA(r):<10:0;
+				
+				PUT/, "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
+				
+					for t do PutPeriod(t) :=  
+						sum[ fin | CommodityType(fin) = 'L', FAtonKm(fin,r,t) ] /
+						( sum[ fin | CommodityType(fin) = 'L', FAton(fin,r,t) ] + 1 ); endfor ;
+					PUT "tonKmLogs" ,  @30; for t do PUT PutPeriod(t):>10:1; endfor ; PUT / ;
+				
+					for t do PutPeriod(t) :=  
+						sum[ fin | CommodityType(fin) = 'R', FAtonKm(fin,r,t) ] /
+						( sum[ fin | CommodityType(fin) = 'R', FAton(fin,r,t) ] + 1 ); endfor ;
+					PUT "tonKmReidues" ,  @30; for t do PUT PutPeriod(t):>10:1; endfor ; PUT / ;
+					PUT "m3VolTot" ,  @30; for t do PUT FOm3HarvVolTot(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "m3VolTotPCT" ,  @30; for t do PUT FOm3VolTotPCT(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "m3VolTotThin" ,  @30; for t do PUT FOm3VolTotThin(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "m3VolTotFina" ,  @30; for t do PUT FOm3VolTotFina(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "AreaTotPCT" ,  @30; for t do PUT FOareaTotPCT(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "AreaTotThin" ,  @30; for t do PUT FOareaTotThin(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "AreaTotFina" ,  @30; for t do PUT FOareaTotFinal(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "AreaTotFert" ,  @30; for t do PUT FOareaTotFert(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "ThinningPercent" ,  @30; for t do 
+						PUT FOm3VolTotThin(r,t) * Power( FOm3HarvVolTot(r,t) + 0.01, -1 ): >10:2; 
+					endfor ; PUT / ;
+					PUT "StandingVol" ,  @30; for t do PUT FOStandingVol(r,t) * 1.e-6: >10:0; endfor ; PUT / ;
+					PUT "m3VolPerHa" ,  @30; for t do PUT FOStandingVol(r,t) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:0; endfor ; PUT / ;
+					PUT "noSetAsideVol" ,  @30; for t do PUT FOnoSetAsideVol(r,t) * 1.e-6: >10:0; endfor ; PUT / ;
+					PUT "noSetAsidePerHa" ,  @30; for t do 
+						PUT FOnoSetAsideVol(r,t) * Power( FOMgMArea(r) - FOSATotArea(r) + 0.0001, -1 ): >10:0; 
+					endfor ; PUT / ;
+					PUT "PineShare" ,  @30; for t do PUT FOPine(r,t) * Power( FOStandingVol(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "SpruceShare" ,  @30; for t do PUT FOSpruce(r,t) * Power( FOStandingVol(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "DecidiousShare" ,  @30; for t do PUT FODeciduous(r,t) * Power( FOStandingVol(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "NetGrowth" ,  @30; for t do PUT FONetGrowth(r,t) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:2; endfor ; PUT / ;
+					PUT "Mortality" ,  @30; for t do PUT FOMortality(r,t) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:2; endfor ; PUT / ;
+					PUT "Gross_incr." ,  @30; for t do PUT ( FONetGrowth(r,t) + FOMortality(r,t) ) * Power( FOMgMArea(r) + 0.0001, -1 ): >10:2; endfor ; PUT / ;
+					PUT "Gross_incr._%" ,  @30; for t do PUT ( FONetGrowth(r,t) + FOMortality(r,t) ) * Power( FOStandingVol(r,t) + 0.01, -1 ) * 100: >10:2; endfor ; PUT / ;
+					PUT "Sawtimber" ,  @30; for t do PUT FOTimber(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "Pulpwood" ,  @30; for t do PUT FOPulpw(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "AgeFinalFell" ,  @30; for t do PUT FOAgeFina(r,t) * Power( FOm3VolTotFina(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "AgeThin" ,  @30; for t do PUT FOAgeThin(r,t) * Power( FOm3VolTotThin(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "DiaFinalFell" ,  @30; for t do PUT FODiaFina(r,t) * Power( FOm3VolTotFina(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "DiaThinning" ,  @30; for t do PUT FODiaThin(r,t) * Power( FOm3VolTotThin(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "RelAboveLSAPriv" ,  @30; for t do PUT FORelVolAboveLSAPriv(r,t) : >10:2; endfor ; PUT / ; 
+					PUT "RelAboveLSANonPriv" ,  @30; for t do PUT FORelVolAboveLSANonPriv(r,t) : >10:2; endfor ; PUT / ; 
+					PUT "TotResìduesFF" ,  @30; for t do PUT FOResStmTot(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "TotStumpsFF" ,  @30; for t do PUT FOResRotTot(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "AvailResìdues" ,  @30; for t do PUT FOResStmAvailable(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "AvailStumps" ,  @30; for t do PUT FOResRotAvailable(r,t) * 1.e-6: >10:2; endfor ; PUT / ;
+					PUT "Area_Age40" ,  @30; for t do PUT FOAge40(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "Area_Age80" ,  @30; for t do PUT FOAge80(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "Area_Age120" ,  @30; for t do PUT FOAge120(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "Area_Age120+" ,  @30; for t do PUT FOAge121(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "Area_OldForest" ,  @30; for t do PUT FOOldForest(r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					PUT "MvolFina" ,  @30; for t do PUT FOm3VolTotFina(r,t) * Power( FOareaTotFinal(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					PUT "MvolThin" ,  @30; for t do PUT FOm3VolTotThin(r,t) * Power( FOareaTotThin(r,t) + 0.01, -1 ): >10:2; endfor ; PUT / ;
+					for tc do
+						PUT BiotopNames(tc) ,  @30; for t do PUT FOBiotopAreas(tc,r,t) * 1.e-3: >10:0; endfor ; PUT / ;
+					endfor ;
+					for fut | CommodityType(fut) = 'P' or CommodityType(fut) = 'D' or  CommodityType(fut) = 'F' or CommodityType(fut) = 'E' do CurrFact := fut ; 
+						PUT "TotalOutput_", FormatString("%e", CurrFact ),  @30; for t do PUT FATotFactorOutput(fut,r,t) * 1.e-6: >10:3; endfor ; PUT / ;
+					endfor ; 
+				
+				PUT /; ! Miscellenaneous
+				
+				for (fin,ft) | fin in TrpFactor and sum[ fut, abs( TabInUtFacilityType(ft,fin,fut) ) ] do
+					PUT FormatString("%e", ft )," ", FormatString("%e", fin ), @30; 
+						for t do PUT FAToUse(fin,ft,r,t) * 1.e-6: >10:3; endfor ; PUT / ;
+				endfor ; 
+				
+				endfor ; ! End regions
+				
+				putclose ResultFile ;
+			}
+		}
+		Procedure DisplacementModel {
+			Body: {
+				empty ProdStock, DpTreeDiffStock, DpSoilDiffSTock, DpProdDiffStock, DpSubProd, DPSubEol, DpOrganicSoil, NCE ;
+				
+				! Living tree carbon stock change
+				DpTreeDiffStock(t) := ( LivingC(t) - LivingC(t+1) )/PeriodLength(t) ;
+				
+				! Mineral soil carbon
+				DpSoilDiffSTock(t) := ( TotSoilC(t) - TotSoilC(t+1) )/PeriodLength(t) ;
+				
+				! Organic soil carbon
+				DpOrganicSoil(t) := sum[ (ia,j) |  
+					t >= pA(ia,j) and t <= pB(ia,j) and Peat(ia)="1", Scale(ia) * 0.88  * x(ia,j) ] ;
+				
+				! Product stock difference
+				ProdStock( (fut,1) | DispFacHalfLife(fut) ) := InitialProdStock(fut) * 0.5^(2.5/(DispFacHalfLife(fut))) + 
+					TotalSupply(fut,1) * PeriodLength(1) * CperUnit(fut) ;
+				ProdStock( (fut,t) | t > 1 and DispFacHalfLife(fut) ) := ProdStock(fut,t-1) * 0.5^(PeriodLength(t-1)/(DispFacHalfLife(fut))) +
+					TotalSupply(fut,t) * PeriodLength(t) * CperUnit(fut) ;
+				DpProdDiffStock(t) := -( sum[ fut, ProdStock(fut,t+1) - ProdStock(fut,t) ] )/PeriodLength(t) ;
+				
+				! Product substitution
+				DpSubProd(t) := - sum[ (fut), TotalSupply(fut,t) * CperUnit(fut) * DispFacProd(fut) ] ;
+				
+				! Product end of life
+				DPSubEol(t) := - sum[ fut | DispFacHalfLife(fut), 
+						ProdStock(fut,t) * ( 1- 0.5^(PeriodLength(t)/(DispFacHalfLife(fut)))  ) * DispFacEol(fut) ] /PeriodLength(t) ;
+				
+				! Total net carbon emissions
+				NCE(t) := DpTreeDiffStock(t)
+				+ DpSoilDiffSTock(t)
+				+ DpProdDiffStock(t)
+				+ DpSubProd(t)
+				+ DPSubEol(t)
+				+ DpOrganicSoil(t) ;
+			}
+		}
+		Procedure BiotopAreas {
+			Body: {
+				empty FOBiotopAreas ;
+				
+				for r | sum[ y, CountyToRegion(y,r) ] > 0 do
+				
+					FOBiotopAreas(1,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
+						m3Pin(ia,j,t) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
+					FOBiotopAreas(2,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
+						m3Spr(ia,j,t) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
+					FOBiotopAreas(3,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
+						m3Pin(ia,j,t) < 0.65*m3Vol(ia,j,t) and m3Spr(ia,j,t) < 0.65*m3Vol(ia,j,t) and 
+						( m3Pin(ia,j,t) + m3Spr(ia,j,t) ) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
+					FOBiotopAreas(4,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
+						( m3Pin(ia,j,t) + m3Spr(ia,j,t) ) < 0.65*m3Vol(ia,j,t) and m3Dec(ia,j,t) < 0.65*m3Vol(ia,j,t),
+						Scale(ia)*x(ia,j) ] ;
+					FOBiotopAreas(5,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
+						m3Dec(ia,j,t) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
+				
 				endfor ;
-			endfor ;
-			*/
-			putclose ResultFile ;
+			}
 		}
-	}
-	Procedure PutPlotSolution {
-		Body: {
-			/*OutputFileResults := "RCP4p5.SSP3_Plot.txt" ;
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			PUT "Plot" ,@30; 
-			PUT "X":>10:0,@30;
-			PUT "Y":>10:0,@40;
-			PUT "Period":>10:0,@50;
-			PUT "Area":>10:0,@60;
-			PUT "ContCat":>10:0,@70;
-			PUT "Treatment":>10:0,@80;
-			PUT "Dgv":>10:0,@90;
-			PUT "Hgv":>10:0,@100;
-			PUT "Age":>10:0,@110;
-			PUT "Stems":>10:0,@120;
-			PUT "Volume":>10:0,@130;
-			PUT "Harvest":>10:0,@140;
-			PUT "Pinefub":>10:0,@150;
-			PUT "Sprucefub":>10:0,@160;
-			PUT "Otherfub":>10:0,@170;
-			PUT "tonResid":>10:0,@180;
-			PUT / ;
-			
-			for i | sum[ j | j in xToRun(i), x(i,j) ] > 0 do
-				CurrJ := argmax[ j, x(i,j) ] ;
-				for t do
-			
-			PUT i:<20:0, @30;
-			PUT GpsEastI(i):>:0, @30;
-			PUT GpsNorthI(i):>10:0, @40;
-			PUT t:>10:0, @50;
-			PUT AreaScale*Area(i):>10:0, @60;
-			PUT CoCat(i,CurrJ,t):>10:0, @70;
-			PUT Treat0(i,CurrJ,t):>10:0, @80;
-			PUT Dgv(i,CurrJ,t):>10:2, @90;
-			PUT Hgv(i,CurrJ,t):>10:2, @100;
-			PUT Age(i,CurrJ,t):>10:0, @110;
-			PUT Stems(i,CurrJ,t):>10:0, @120;
-			PUT m3Vol(i,CurrJ,t):>10:1, @130;
-			PUT m3Harv(i,CurrJ,t):>10:1, @140;
-			PUT PlotOutput('pine__',i,CurrJ,t):>10:1, @150;
-			PUT PlotOutput('spruce',i,CurrJ,t):>10:1, @160;
-			PUT PlotOutput('Decids',i,CurrJ,t):>10:1, @170;
-			PUT PlotOutput('resids',i,CurrJ,t):>10:1, @180;
-			PUT / ;
-			
+		Procedure PutIndOutput {
+			Body: {
+				OutputFileResults := FileNames('IndOutput');
+				ResultFile.PageWidth := 600 ;
+				PUT ResultFile ;
+				
+				PUT "Facility", @13, "Process", @24, "Output", @30 ; for t do PUT t: >10:0; endfor ; PUT / ;
+				for (fut,fa) do
+				 	PeriodResult(t) := NetOutputAtFacility(fut,fa,t) + sum[ f2 | f2 in ActiveFacility, FacilityToFacility(fut,fa,f2,t) ] ;
+					if sum[ t | t < LastPeriod, PeriodResult(t) ] > 0 then
+						PUT fa, @14, CurrFT(fa), @20, fut:>10:0; for t | t < LastPeriod do PUT PeriodResult(t): >10:0; endfor ; PUT / ; 
+					endif ;
 				endfor ;
-			endfor ;
-			
-			putclose ResultFile ;
-			*/
+				
+				putclose ResultFile ;
+			}
+		}
+		Procedure PutBirchSawMillAnalysisData {
+			Body: {
+				OutputFileResults := FileNames('BirchSawmillOutput') ;
+				ResultFile.PageWidth := 600 ;
+				PUT ResultFile ;
+				
+				for fa | FacilityType(fa) = "sawmbe" do
+					put fa: >10:2;
+					put NetOutputAtFacility('Sawnbe',fa,1): >10:0 ;
+					put sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 100, 
+						max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * Scale(ia) ]*0.2: >10:0;
+					put sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 200, 
+						max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * Scale(ia) ]*0.2: >10:0;
+					put sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 300, 
+						max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * Scale(ia) ]*0.2: >10:0;
+					ParTmp := sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 300, 
+						max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * 
+						Scale(ia) * KmPlotToLoc(ia,CurrFacInLoc(fa))] ;
+					ParTmp := Power( sum[ ia | KmPlotToLoc(ia,CurrFacInLoc(fa)) < 300, 
+						max( (j) | j in xToRun(ia), PlotOutput('BerTim',ia,j,1) ) * 
+						Scale(ia) ] + 0.001,-1 );
+					put ParTmp * ParTmp: >10:2;
+					put min( f | FacilityType(f) = 'PuChem' or FacilityType(f) = 'PuDiss' or FacilityType(f) = 'PuCTMP', 
+						KmLocToLoc(CurrFacInLoc(fa),CurrFacInLoc(f)) ): >10:2;
+				
+				PUT / ;  
+				
+				endfor;
+				
+				PUT / ;  
+				PUT/, "Period" ,  @30; for t do PUT t: >10:0; endfor ; PUT / ; 
+				
+				PUT "Lövmassa till massaindustrin" ,  @30; 
+					for t do PUT sum( ft, FAToUse('Decids',ft,1,t)) * 1.e-6: >10:3; endfor ; PUT / ;
+				PUT "Bjorksågtimmer till massaindustrin" ,  @30; 
+					for t do PUT sum( ft | ft = 'PuChem' or ft = 'PuDiss' or ft = 'PuCTMP', 
+						FAToUse('BerTim',ft,1,t)) * 1.e-6: >10:3; endfor ; PUT / ;
+				PUT "Bjorksågtimmer till sågverken" ,  @30; 
+					for t do PUT FAToUse('BerTim','Sawmbe',1,t) * 1.e-6: >10:3; endfor ; PUT / ;
+				PUT "Hybridtimmer till sågverken" ,  @30; 
+					for t do 
+						PUT sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and 
+						count( t1 | t1 >= pA(ia,j) and t1 <= pB(ia,j) and Nratg(ia,j,t1) >= 8 and Nratg(ia,j,t1) <= 11) > 0,
+						Scale(ia) * PlotOutput('BerTim',ia,j,t) * x(ia,j) ]  * 1.e-6 *0.2: >10:3; 
+					endfor ; PUT / ;
+				PUT "Hybridmassaved till massaverk" ,  @30; 
+					for t do 
+						PUT sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and 
+						count( t1 | t1 >= pA(ia,j) and t1 <= pB(ia,j) and Nratg(ia,j,t1) >= 8 and Nratg(ia,j,t1) <= 11) > 0,
+						Scale(ia) * PlotOutput('Decids',ia,j,t) * x(ia,j) *0.2]  * 1.e-6: >10:3; 
+					endfor ; PUT / ;
+				PUT "Föryngring med hybrid (ha)" ,  @30; 
+					for t do 
+						PUT sum[ (ia,j) | t >= pA(ia,j) and t <= pB(ia,j) and Nratg(ia,j,t) >= 8 and Nratg(ia,j,t) <= 11,
+						Scale(ia) * x(ia,j) ] *0.2  : >10:0; 
+					endfor ; PUT / ;
+				
+				PUT / ;  
+				/*
+				PUT/, "Period" ,  @30; for t do put t: >10:0; endfor ; PUT / ;
+				empty TableDA;
+				for (ia,j,t) | x(ia,j) do
+					DiaTab := max(1,round((min(40,Dgv(ia,j,t))-12)/2) + 1);
+					AgeTab := max(1,round((min(130,Age(ia,j,t))-30)/10) + 1);
+					TableDA(DiaTab,AgeTab,t) += Scale(ia) * PlotOutput('BerTim',ia,j,t) * x(ia,j) * 0.2;
+				endfor; 
+				for (ac,dc) do
+					PUT "Age " + (ac*10+20) + "-" + (ac*10+30) + " Dia "  + (dc*2+8) + "-" + (dc*2+10) + ":",  @30; 
+					for t do PUT TableDA(dc,ac,t): >10:0; endfor; PUT / ;  
+				endfor;
+				*/
+				putclose ResultFile ;
+			}
+		}
+		Procedure PutAgeClasses {
+			Body: {
+				OutputFileResults := "AgeClasses.txt" ;
+				ResultFile.PageWidth := 600 ;
+				PUT ResultFile ;
+				
+				PUT "Ageclass" , @10; PUT "Area":>10, @20; PUT "m3PerHa":>10; PUT / ;
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 3, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "0" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 3, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ; 
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 11 and Age(i,j,1) >= 3, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "3" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 11 and Age(i,j,1) >= 3, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ; 
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 21 and Age(i,j,1) >= 11, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "11" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 21 and Age(i,j,1) >= 11, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 31 and Age(i,j,1) >= 21, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "21" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 31 and Age(i,j,1) >= 21, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 41 and Age(i,j,1) >= 31, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "31" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 41 and Age(i,j,1) >= 31, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 61 and Age(i,j,1) >= 41, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "41" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 61 and Age(i,j,1) >= 41, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 81 and Age(i,j,1) >= 61, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "61" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 81 and Age(i,j,1) >= 61, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 101 and Age(i,j,1) >= 81, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "81" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 101 and Age(i,j,1) >= 81, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 121 and Age(i,j,1) >= 101, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "101" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 121 and Age(i,j,1) >= 101, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) < 141 and Age(i,j,1) >= 121, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "121" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) < 141 and Age(i,j,1) >= 121, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ;  
+				
+				ParTmp := sum[ (i,j) | Age(i,j,1) >= 141, Scale(i) * x(i,j) ] * 1.e-6 ;
+				ParTmp2 := 1/(ParTmp+0.000000001) ;
+				PUT "141+" ,  @10; 
+					PUT ParTmp: >10:2;
+					PUT sum[ (i,j) | Age(i,j,1) >= 141, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
+				PUT / ; 
+				
+				PUT sum[ (i,j), Scale(i) * x(i,j) ] * 1.e-6 : >10:2; PUT / ; 
+				PUT sum[ (i,j), m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 : >10:2; PUT / ; 
+				
+				putclose ResultFile ;
+			}
 		}
 	}
-	Procedure PutAgeClasses {
-		Body: {
-			OutputFileResults := "AgeClasses.txt" ;
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
-			
-			PUT "Ageclass" , @10; PUT "Area":>10, @20; PUT "m3PerHa":>10; PUT / ;
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 3, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "0" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 3, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ; 
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 11 and Age(i,j,1) >= 3, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "3" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 11 and Age(i,j,1) >= 3, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ; 
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 21 and Age(i,j,1) >= 11, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "11" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 21 and Age(i,j,1) >= 11, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 31 and Age(i,j,1) >= 21, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "21" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 31 and Age(i,j,1) >= 21, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 41 and Age(i,j,1) >= 31, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "31" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 41 and Age(i,j,1) >= 31, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 61 and Age(i,j,1) >= 41, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "41" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 61 and Age(i,j,1) >= 41, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 81 and Age(i,j,1) >= 61, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "61" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 81 and Age(i,j,1) >= 61, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 101 and Age(i,j,1) >= 81, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "81" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 101 and Age(i,j,1) >= 81, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 121 and Age(i,j,1) >= 101, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "101" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 121 and Age(i,j,1) >= 101, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) < 141 and Age(i,j,1) >= 121, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "121" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) < 141 and Age(i,j,1) >= 121, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ;  
-			
-			ParTmp := sum[ (i,j) | Age(i,j,1) >= 141, Scale(i) * x(i,j) ] * 1.e-6 ;
-			ParTmp2 := 1/(ParTmp+0.000000001) ;
-			PUT "141+" ,  @10; 
-				PUT ParTmp: >10:2;
-				PUT sum[ (i,j) | Age(i,j,1) >= 141, m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 * ParTmp2: >10:2; 
-			PUT / ; 
-			
-			PUT sum[ (i,j), Scale(i) * x(i,j) ] * 1.e-6 : >10:2; PUT / ; 
-			PUT sum[ (i,j), m3Vol(i,j,1) * Scale(i) * x(i,j) ] * 1.e-6 : >10:2; PUT / ; 
-			
-			putclose ResultFile ;
+	Section RunParticularModel {
+		DeclarationSection GMPdeclarations {
+			Parameter RCvalue {
+				IndexDomain: j;
+				Range: free;
+			}
+			Parameter RelativeImprovm;
+			ElementParameter SweForGMP {
+				Range: AllGeneratedMathematicalPrograms;
+			}
 		}
-	}
-	Procedure BiotopAreas {
-		Body: {
-			empty FOBiotopAreas ;
-			
-			for r | sum[ y, CountyToRegion(y,r) ] > 0 do
-			
-				FOBiotopAreas(1,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
-					m3Pin(ia,j,t) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
-				FOBiotopAreas(2,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
-					m3Spr(ia,j,t) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
-				FOBiotopAreas(3,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
-					m3Pin(ia,j,t) < 0.65*m3Vol(ia,j,t) and m3Spr(ia,j,t) < 0.65*m3Vol(ia,j,t) and 
-					( m3Pin(ia,j,t) + m3Spr(ia,j,t) ) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
-				FOBiotopAreas(4,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
-					( m3Pin(ia,j,t) + m3Spr(ia,j,t) ) < 0.65*m3Vol(ia,j,t) and m3Dec(ia,j,t) < 0.65*m3Vol(ia,j,t),
-					Scale(ia)*x(ia,j) ] ;
-				FOBiotopAreas(5,r,t) := sum[ (y,ia,j) | Hgv(ia,j,t) > 7 and PlotsToCounties(ia,y) and CountyToRegion(y,r) and	
-					m3Dec(ia,j,t) >= 0.65*m3Vol(ia,j,t), Scale(ia)*x(ia,j) ] ;
-			
-			endfor ;
+		DeclarationSection CarbonModel {
+			Parameter MinCforestPerHa {
+				IndexDomain: t;
+			}
+			Parameter MinDiffCforestPerYear {
+				IndexDomain: t;
+			}
+			Parameter InitialVolTot {
+				Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Vol(ia,First(xToRun(ia)),1) ];
+			}
+			Parameter InitialSharePine {
+				Range: free;
+				Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Pin(ia,First(xToRun(ia)),1) ] / InitialVolTot;
+			}
+			Parameter InitialShareSpruce {
+				Range: free;
+				Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Spr(ia,First(xToRun(ia)),1) ] / InitialVolTot;
+			}
+			Parameter InitialShareDeciduous {
+				Range: free;
+				Definition: sum[ ia | Peat(ia)="0", Scale(ia) * m3Dec(ia,First(xToRun(ia)),1) ] / InitialVolTot;
+			}
+			Parameter InitialSoilC {
+				IndexDomain: t;
+				Definition: {
+					if t = 1 then
+						InitalSoilCoarseC
+						+ InitalSoilFineC
+						+ InitalSoilLitterC
+					else
+						InitalSoilCoarseC * exp(-DecayRateCoarse*(t-1)*5)
+						+ InitalSoilFineC * exp(-DecayRateFine*(t-1)*5)
+						+ InitalSoilLitterC * exp(-DecayRateLitter*(t-1)*5)
+					endif ;
+				}
+			}
+			Parameter ConDiffCRHS {
+				IndexDomain: t;
+				Definition: {
+					MinDiffCforestPerYear(t) * PeriodLength(t)
+					 - ( InitialSoilC(t+1)- InitialSoilC(t) )
+				}
+			}
+			Variable LiveC {
+				IndexDomain: t;
+				Range: nonnegative;
+				Definition: {
+					sum[ (ia,j) |  t >= pA(ia,j) and t <= pB(ia,j) and Dgv(ia,j,t)>0, Scale(ia) * TSbiom(ia,j,t) * x(ia,j) ] * CsharePertTS
+					+
+					sum[ (ia,j) |  t >= pA(ia,j) and t <= pB(ia,j) and Dgv(ia,j,t)=0, Scale(ia) * 0.45 * m3Vol(ia,j,t) * x(ia,j) ]  ;
+				}
+			}
+			Variable AHCoarseC {
+				IndexDomain: t;
+				Range: nonnegative;
+				Definition: {
+					sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TScoar(ia,j,t) * Scale(ia) * x(ia,j) ]
+					- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResRot', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
+				}
+			}
+			Variable AHFineC {
+				IndexDomain: t;
+				Range: nonnegative;
+				Definition: {
+					sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), TSfine(ia,j,t) * Scale(ia) * x(ia,j) ]
+					- sum[ (fin,ia,fa) | Peat(ia)="0" and fin = 'ResStm', PlotToFacility(fin,ia,fa,t) ] * PeriodLength(t)
+				}
+			}
+			Variable LitterC {
+				IndexDomain: t;
+				Range: nonnegative;
+				Definition: {
+					sum[ (ia,j) | Peat(ia)="0" and j in xToRun(ia), 
+					( ( ( 715.990 -10.205*Latitude(ia) + 4.193*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * ( m3Pin(ia,j,t) + m3Dec(ia,j,t) )  +
+					( -39.615 + 10.614*Hgv(ia,j,t) + 2.985*Dgv(ia,j,t)*Dgv(ia,j,t)*Stems(ia,j,t)/12732.4 ) * m3Spr(ia,j,t) )
+					 / (m3Vol(ia,j,t)+0.001) / 100. + 1 )
+					* PeriodLength(t) * Scale(ia) * x(ia,j) ]
+					
+					!pine and deciduous: Model	degfre?	Interc	Lat	BAH	
+					! 5	32.000	715.990	-10.205	4.193
+					!Spruce		Interc	h (m)	BAH
+					! LFtotal	2b	-39.615	10.614	2.985
+				}
+			}
+			Variable SoilC {
+				IndexDomain: t;
+				Range: nonnegative;
+				Definition: {
+					if t = FirstPeriod then
+						0
+					else
+						sum[ t1 | t1 <= t-1,
+								AHFineC(t1) * exp(-DecayRateFine*(t-t1))
+								+ AHCoarseC(t1) * exp(-DecayRateCoarse*(t-t1))
+								+ LitterC(t1) * exp(-DecayRateLitter*(t-t1))
+							] * CsharePertTS
+					endif ;
+				}
+			}
+			Variable DiffC {
+				IndexDomain: t | t < LastPeriod;
+				Range: free;
+				Definition: LiveC(t+1) - LiveC(t) + SoilC(t+1) - SoilC(t);
+			}
+			Constraint ConForestC {
+				IndexDomain: t;
+				Definition: LiveC(t) + SoilC(t) >= - InitialSoilC(t) + MinCforestPerHa(t) * sum[ ia | Peat(ia)="0", Scale(ia) ];
+			}
+			Constraint ConDiffPyForestC {
+				IndexDomain: t | t < LastPeriod;
+				Definition: {
+					LiveC(t+1) + SoilC(t+1) - LiveC(t) - SoilC(t) >= ConDiffCRHS(t) + 1e12
+					!MinDiffCforestPerYear(t) * PeriodLength(t) - ( InitialSoilC(t+1)- InitialSoilC(t) )
+				}
+			}
+		}
+		DeclarationSection SetasideModel {
+			Parameter SetAsideValuePerHa {
+				InitialData: 0;
+			}
+			Variable SetAsideValue {
+				Range: free;
+				Definition: {
+					sum[ (ia,j) | j in xToRun(ia) and hasSetAside(ia) = 0 and count( t | t <= 6, Treatm(ia,j,t) <> 'NM' ) = 0 and SetAsideIndex(ia),  
+						SetAsideValuePerHa * Scale(ia) * x(ia,j) ]  / ( PeriodLength(1) * max[ ia, SetAsideIndex(ia) ] )
+				}
+			}
+		}
+		DeclarationSection MMBpayrmentModel {
+			Variable CnetValuePerT {
+				IndexDomain: t | t > 1;
+				Range: free;
+				Definition: {
+					sum[ (ia,j) | hasCContract(ia) and OwnTyp(ia) = "Private" and j in xToRun(ia) and m3Dec(ia,j,1) < 0.5 * m3Vol(ia,j,1),
+						( TSbiom(ia,j,t) - TSbiom(ia,j,t-1) ) * Scale(ia) * x(ia,j) ] * ForestCValuePerTonC / PeriodLength(t)
+				}
+			}
+			Variable ObjFuncCvalue {
+				Range: free;
+				Definition: {
+					sum[ t, df(t) *
+					(
+					RevenuePerT(t)
+					-
+					CostsPerT(t)
+					+
+					TradePerT(t)
+					+
+					AmenityPerT(t)
+					+
+					CnetValuePerT(t)
+					) ]
+				}
+			}
+			Set BestCtons {
+				SubsetOf: Plot;
+				Index: ic;
+				OrderBy: user;
+			}
+			Parameter ForestCValuePerTonC {
+				Text: "Valule of stock increase of one ton C = C value * 12 / 44";
+			}
+			Parameter MaxHaContract;
+			Parameter ForestCValuePeriods;
+			Parameter ForestCTons {
+				IndexDomain: ia;
+				Range: free;
+			}
+			Parameter FinSP {
+				IndexDomain: (fin,ia,t) | ExtractionRate(fin) and CommodityType(fin) = 'L';
+			}
+			Parameter CaddValue {
+				IndexDomain: ia;
+			}
+			Parameter hasCContract {
+				IndexDomain: ia;
+				Range: binary;
+			}
+			Parameter CValuePerT {
+				IndexDomain: t;
+				Range: free;
+				Definition: {
+					if ForestCValuePeriods < LastPeriod then
+						if t = 1 then
+							sum[ ia | hasCContract(ia), ForestCTons(ia) * ForestCValuePerTonC * Scale(ia) / PeriodLength(t) ]
+						endif
+					else
+						CnetValuePerT(t)
+					endif;
+				}
+			}
+			MathematicalProgram MaxCvalue {
+				Objective: ObjFuncCvalue;
+				Direction: maximize;
+				Constraints: SurplusModelIdentifiers;
+				Variables: AllVariables;
+				Type: Automatic;
+			}
+		}
+		Procedure RunMMBpayment {
+			Body: {
+				!-- Read and save forest data
+				FileNames('Forest')     		:= "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
+				FileNames('Factors')    		:= "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
+				FileNames('ForestSave') 		:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/MMBpayment.data";
+				!-- Distance matrices
+				FileNames('DistancesLocToLoc') 	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/DistancesLocToLoc.csv";
+				FileNames('DistancesPlotToLoc')	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/PlotToLoc.csv";
+				!-- Read forest reltaed data
+				FileNames('ForestMerge') 		:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/MMBpayment.data";
+				FileNames('SegmentData') 		:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/SegmentData_0p15.csv";
+				!-- Facilities and input/output related data
+				FileNames('InputOutputData')	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/InputOutputV2601.xlsx";
+				FileNames('FacilityData')   	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/SweForFacilytyData#3.xlsx";
+				
+				!--- All data preparation including saving
+				!ReadAndSaveGAYAData;
+				ReadStandAndPlotData ;
+				statusmessage("ReadStandAndPlotData OK") ;
+				ReadIO;
+				ReadFacilities ;
+				statusmessage("ReadIOandFacilities OK") ;
+				ReadDistances ;
+				statusmessage("ReadDistances OK") ;
+				SetSets;
+				statusmessage("SetSets OK") ;
+				ManageTransports ;
+				statusmessage('ManageTransports completed') ;
+				
+				! Solve BAU problem, write result and get shadow prices -------------------------
+				SurplusModelIdentifiers += data { CnetValuePerT } ;
+				/*ForestCTons(ia) := 0;
+				hasCContract(ia) := 0;
+				ForestCValuePeriods := 99;
+				property ConHauling.ShadowPrice := on;
+				empty TotalSupply,NetOutputAtFacility;
+				TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' ) := q0(fut,t);
+				NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F'  ) := 
+					q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
+					sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
+				!solve MaxCvalue;
+				!SolveMaxNetSurplus ; 
+				empty FinSP;
+				FinSP( (fin,ia,t) | ExtractionRate(fin) and CommodityType(fin) = 'L') := 
+					- ConHauling.ShadowPrice(fin,ia,t);
+				!-- Output results
+				MaxNetSurplus.Objective := MaxCvalue.Objective;
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_test.csv";
+				PutRegionResults ;
+				*/
+				! Common C specs
+				ForestCValuePerTonC := 400 * 44 / 12;
+				MaxHaContract := 100000;
+				/*
+				! Solve C problem with 1 period contract -------------------------------------
+				block;
+				empty ForestCTons, CaddValue, hasCContract;
+				! Analysis A: (i) no harvest (ii) passes recommended age
+				! Analysis B: (iii) with harvest activity during this period i BAU
+				ForestCValuePeriods := 1;
+				ForestCTons( ia | OwnTyp(ia) = "Private") := 
+					max[ j | j in xToRun(ia) and 
+						m3Dec(ia,j,1) < 0.5 * m3Vol(ia,j,1) and
+						sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] = 0 and [
+						( SIS(ia,j,1) > 30 and Age(ia,j,1) > LSA(ia,j,1) + 20 - 5*ForestCValuePeriods and
+					 		Age(ia,j,1) < LSA(ia,j,1) + 20 ) or
+						( SIS(ia,j,1) > 26 and Age(ia,j,1) > LSA(ia,j,1) + 25 - 5*ForestCValuePeriods and
+							Age(ia,j,1) < LSA(ia,j,1) + 25 ) or
+						( Age(ia,j,1) > LSA(ia,j,1) + 30 - 5*ForestCValuePeriods and
+							Age(ia,j,1) < LSA(ia,j,1) + 30 ) ], 
+						(TSbiom(ia,j,ForestCValuePeriods+1) - TSbiom(ia,j,1) ) * CsharePertTS 
+						];
+				ForestCTons(ia) := max[ -1, ForestCTons(ia)];
+				! Analysis B requirement - BAU solution must include harvest during the period
+				ForestCTons( ia | ForestCTons(ia) and
+					sum[ (j,t) | t <= ForestCValuePeriods, m3Harv(ia,j,t) * x(ia,j) ] = 0 ) := 0;
+				! The added value of a contract
+				CaddValue(ia | OwnTyp(ia) = "Private") := 
+					max[ j | j in xToRun(ia) and m3Dec(ia,j,1) < 0.5 * m3Vol(ia,j,1) and
+						sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] = 0,
+						sum[ (fin,t) | CommodityType(fin) = 'L',
+							Extraction(fin,ia,j,t) * PlotOutput(fin,ia,j,t) * FinSP(fin,ia,t) / PeriodLength(t) ]
+						- 
+						sum[ t, ( SCost(ia,j,t) + HCost(ia,j,t) + FCost(ia,j,t) ) * df(t) / PeriodLength(t) ]
+						+ 
+						ForestCTons(ia) * ForestCValuePerTonC / PeriodLength(1) ]
+					-	(
+						max[ j | j in xToRun(ia),
+						sum[ (fin,t) | CommodityType(fin) = 'L',
+							Extraction(fin,ia,j,t) * PlotOutput(fin,ia,j,t) * FinSP(fin,ia,t) / PeriodLength(t) ]
+						- 
+						sum[ t, ( SCost(ia,j,t) + HCost(ia,j,t) + FCost(ia,j,t) ) * df(t) / PeriodLength(t) ] 
+						] ) ;
+				! Among CaddValue > 0 select MaxHaContract area
+				empty ParTmp ;
+				BestCtons := Sort( ia | CaddValue(ia), - CaddValue(ia));
+				for ic | hasCContract(ic) = 0 and CaddValue(ic) > 0 do
+					hasCContract(ic) := 1 ;
+					ParTmp += Scale(ic) ;
+					if ParTmp > MaxHaContract then
+						break ;
+					endif ;
+				endfor ;
+				! Solve problem with restriction on programs for owners with contract
+				xToRun( ia | hasCContract(ia) ) -= { j | sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] <> 0}  ;
+				SolveMaxNetSurplus ;
+				!-- Output results
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_C5y400B_NoHaLimit.csv";
+				PutRegionResults ;
+				endblock;
+				
+				! Solve C problem with 4 period contract -------------------------------------
+				block;
+				! Reinstate removed programs
+				!xToRun( ia | hasCContract(ia) ) += { j | sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] <> 0}  ;
+				empty ForestCTons, CaddValue, hasCContract;
+				! Analysis A: (i) no harvest (ii) passes recommended age
+				! Analysis B: (iii) with harvest activity during this period i BAU
+				ForestCValuePeriods := 4;
+				ForestCTons( ia | OwnTyp(ia) = "Private") := 
+					max[ j | j in xToRun(ia) and m3Dec(ia,j,1) < 0.5 * m3Vol(ia,j,1) and
+						sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] = 0 and [
+						( SIS(ia,j,1) > 30 and Age(ia,j,1) > LSA(ia,j,1) + 20 - 5*ForestCValuePeriods and
+					 		Age(ia,j,1) < LSA(ia,j,1) + 20 ) or
+						( SIS(ia,j,1) > 26 and Age(ia,j,1) > LSA(ia,j,1) + 25 - 5*ForestCValuePeriods and
+							Age(ia,j,1) < LSA(ia,j,1) + 25 ) or
+						( Age(ia,j,1) > LSA(ia,j,1) + 30 - 5*ForestCValuePeriods and
+							Age(ia,j,1) < LSA(ia,j,1) + 30 ) ], 
+						(TSbiom(ia,j,ForestCValuePeriods+1) - TSbiom(ia,j,1) ) * CsharePertTS 
+						];
+				ForestCTons(ia) := max[ -1, ForestCTons(ia)];
+				! Analysis B requirement - BAU solution must include harvest during the period
+				ForestCTons( ia | ForestCTons(ia) and
+					sum[ (j,t) | t <= ForestCValuePeriods, m3Harv(ia,j,t) * x(ia,j) ] = 0 ) := 0;
+				! The added value of a contract
+				CaddValue(ia | OwnTyp(ia) = "Private") := 
+					max[ j | j in xToRun(ia) and m3Dec(ia,j,1) < 0.5 * m3Vol(ia,j,1) and
+						sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] = 0,
+						sum[ (fin,t) | CommodityType(fin) = 'L',
+							Extraction(fin,ia,j,t) * PlotOutput(fin,ia,j,t) * FinSP(fin,ia,t) / PeriodLength(t) ]
+						- 
+						sum[ t, ( SCost(ia,j,t) + HCost(ia,j,t) + FCost(ia,j,t) ) * df(t) / PeriodLength(t) ]
+						+ 
+						ForestCTons(ia) * ForestCValuePerTonC / PeriodLength(1) ]
+					-	(
+						max[ j | j in xToRun(ia),
+						sum[ (fin,t) | CommodityType(fin) = 'L',
+							Extraction(fin,ia,j,t) * PlotOutput(fin,ia,j,t) * FinSP(fin,ia,t) / PeriodLength(t) ]
+						- 
+						sum[ t, ( SCost(ia,j,t) + HCost(ia,j,t) + FCost(ia,j,t) ) * df(t) / PeriodLength(t) ] 
+						] ) ;
+				! Among CaddValue > 0 select MaxHaContract area
+				empty ParTmp ;
+				BestCtons := Sort( ia | CaddValue(ia), - CaddValue(ia));
+				for ic | hasCContract(ic) = 0 and CaddValue(ic) > 0 do
+					hasCContract(ic) := 1 ;
+					ParTmp += Scale(ic) ;
+					if ParTmp > MaxHaContract then
+						break ;
+					endif ;
+				endfor ;
+				! Solve problem with restriction on programs for owners with contract
+				!xToRun( ia | hasCContract(ia) ) -= { j | sum[ t | t <= ForestCValuePeriods, m3Harv(ia,j,t) ] <> 0}  ;
+				!SolveMaxNetSurplus ;
+				!-- Output results
+				!FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_C20y400B_NoHaLimit.csv";
+				!PutRegionResults ;
+				endblock;
+				
+				!-- Solve with has contract version B and MaxHaContract = 100000
+				ForestCValuePeriods := 99;
+				empty TotalSupply,NetOutputAtFacility;
+				TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' ) := q0(fut,t);
+				NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F'  ) := 
+					q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
+					sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
+				solve MaxCvalue;
+				!-- Output results
+				MaxNetSurplus.Objective := MaxCvalue.Objective;
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_AllB.csv";
+				PutRegionResults ;
+				*/
+				!-- Solve with all contracted
+				hasCContract(ia) := 1;
+				ForestCValuePeriods := 99;
+				empty TotalSupply,NetOutputAtFacility;
+				TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' ) := q0(fut,t);
+				NetOutputAtFacility.Lower( (fut,fa,t) | CommodityType( StringToElement(Factor,FactorForCapacity(CurrFT(fa))) ) = 'F'  ) := 
+					q0(StringToElement(Factor,FactorForCapacity(CurrFT(fa))),t) * InitialCapacity(fa) / 
+					sum[ f | f in ActiveFacility and CurrFT(f) = CurrFT(fa), InitialCapacity(f) ];
+				solve MaxCvalue;
+				!-- Output results
+				MaxNetSurplus.Objective := MaxCvalue.Objective;
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_AllBNoHa.csv";
+				PutRegionResults ;
+			}
+		}
+		Procedure RunSeydlitz {
+			Body: {
+				!-- Read and save forest data
+				FileNames('Forest')     := "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
+				FileNames('Factors')    := "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
+				FileNames('ForestSave') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_MinTop8.data";
+				!-- Distance matrices
+				FileNames('DistancesLocToLoc') := "D:/Users/ljeraa/BioFrame/SweForData/CommonData/DistancesLocToLoc.csv";
+				FileNames('DistancesPlotToLoc'):= "D:/Users/ljeraa/BioFrame/SweForData/CommonData/DistancesPlotToLoc#2.csv";
+				!-- Read forest reltaed data
+				FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Seydlitz_b18p4.data";
+				FileNames('SegmentData') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/SegmentData.csv";
+				!-- Facilities and input/output related data
+				FileNames('InputOutputData'):= "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/InputOutput#3Seydlitz.xlsx";
+				FileNames('FacilityData')   := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/SweForFacilytyData#3.xlsx";
+				!-- Output results
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/Cement/Res_Cement.csv";
+				FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Ind_MinTop8.csv";
+				FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweForData/Seydlitz/Saw_MinTop8.csv";
+				
+				!--- All data preparation including saving
+				!ReadAndSaveGAYAData;
+				ReadStandAndPlotData ;
+				statusmessage("ReadStandAndPlotData OK") ;
+				ReadIO;
+				ReadFacilities ;
+				statusmessage("ReadIOandFacilities OK") ;
+				ReadDistances ;
+				statusmessage("ReadDistances OK") ;
+				SetSets;
+				statusmessage("SetSets OK") ;
+				ManageTransports ;
+				
+				statusmessage('ManageTransports completed') ;
+				SolveMaxNetSurplus ;
+				PutRegionResults ;
+				halt;
+				PutIndOutput;
+				PutBirchSawMillAnalysisData;
+				halt;
+				!-- b12p4s15
+				FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b12p4.data";
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b12p4s15.csv";
+				FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_b12p4s15.csv";
+				FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_b12p4s15.csv";
+				!--- All data preparation including saving
+				ReadStandAndPlotData ;
+				ReadIO;
+				ReadFacilities ;
+				ReadDistances ;
+				SetSets;
+				ManageTransports ;
+				SolveMaxNetSurplus ;
+				PutRegionResults ;
+				PutIndOutput;
+				PutBirchSawMillAnalysisData;
+				
+				!-- b18p2s15
+				FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b18p2.data";
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b18p2s15.csv";
+				FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_b18p2s15.csv";
+				FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_b18p2s15.csv";
+				!--- All data preparation including saving
+				ReadStandAndPlotData ;
+				ReadIO;
+				ReadFacilities ;
+				ReadDistances ;
+				SetSets;
+				ManageTransports ;
+				SolveMaxNetSurplus ;
+				PutRegionResults ;
+				PutIndOutput;
+				PutBirchSawMillAnalysisData;
+				
+				!-- b18p4s15
+				FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_b18p4.data";
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_b18p4s15.csv";
+				FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_b18p4s15.csv";
+				FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_b18p4s15.csv";
+				!--- All data preparation including saving
+				ReadStandAndPlotData ;
+				ReadIO;
+				ReadFacilities ;
+				ReadDistances ;
+				SetSets;
+				ManageTransports ;
+				SolveMaxNetSurplus ;
+				PutRegionResults ;
+				PutIndOutput;
+				PutBirchSawMillAnalysisData;
+				
+				!-- bf12p1s15
+				FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_bf12p1.data";
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_bf12p1s15.csv";
+				FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_bf12p1s15.csv";
+				FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_bf12p1s15.csv";
+				!--- All data preparation including saving
+				ReadStandAndPlotData ;
+				ReadIO;
+				ReadFacilities ;
+				ReadDistances ;
+				SetSets;
+				ManageTransports ;
+				SolveMaxNetSurplus ;
+				PutRegionResults ;
+				PutIndOutput;
+				PutBirchSawMillAnalysisData;
+				
+				!-- bf18p1s15
+				FileNames('ForestMerge') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Seydlitz_bf18p1.data";
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Res_bf18p1s15.csv";
+				FileNames('IndOutput') 	        := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Ind_bf18p1s15.csv";
+				FileNames('BirchSawmillOutput') := "D:/Users/ljeraa/BioFrame/SweFor/Seydlitz/Saw_bf18p1s15.csv";
+				!--- All data preparation including saving
+				ReadStandAndPlotData ;
+				ReadIO;
+				ReadFacilities ;
+				ReadDistances ;
+				SetSets;
+				ManageTransports ;
+				SolveMaxNetSurplus ;
+				PutRegionResults ;
+				PutIndOutput;
+				PutBirchSawMillAnalysisData;
+			}
+		}
+		Procedure RunCement {
+			Body: {
+				
+				
+				!--- All data preparation including saving
+				statusmessage("ReadingGAYData") ;
+				!ReadAndSaveGAYAData;
+				statusmessage("Reading StandAndPlotData") ;
+				ReadStandAndPlotData ;
+				statusmessage("ReadStandAndPlotData OK") ;
+				ReadIO;
+				ReadFacilities ;
+				statusmessage("ReadIOandFacilities OK") ;
+				ReadDistances ;
+				statusmessage("ReadDistances OK") ;
+				SetSets;
+				statusmessage("SetSets OK") ;
+				ManageTransports ;
+				statusmessage('ManageTransports completed') ;
+				SolveMaxNetSurplus ;
+				PutRegionResults;
+			}
+		}
+		Procedure RunNVK {
+			Body: {
+				!-- Read and save forest data
+				FileNames('Forest')     		:= "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
+				FileNames('Factors')    		:= "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
+				FileNames('ForestSave') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/NVKTest.data";
+				!-- Distance matrices
+				FileNames('DistancesLocToLoc') 	:= "D:/Users/ljeraa/BioFrame/SweForData/Cement/DistancesLocToLocWithTerminals.csv";
+				FileNames('DistancesPlotToLoc')	:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/PlotToLoc.csv";
+				!-- Read forest reltaed data
+				FileNames('ForestMerge') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/NVK.data";
+				FileNames('SegmentData') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/SegmentData_new.csv";
+				!-- Facilities and input/output related data
+				FileNames('InputOutputData')	:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/InputOutputV2601.xlsx";
+				FileNames('FacilityData')   	:= "D:/Users/ljeraa/BioFrame/SweForData/Cement/SweForFacilytyData#3.xlsx";
+				!-- Output results
+				FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_BAU.csv";
+				
+				!--- All data preparation including saving
+				statusmessage("ReadingGAYData") ;
+				!ReadAndSaveGAYAData;
+				statusmessage("Reading StandAndPlotData") ;
+				ReadStandAndPlotData ;
+				statusmessage("ReadStandAndPlotData OK") ;
+				ReadIO;
+				ReadFacilities ;
+				statusmessage("ReadIOandFacilities OK") ;
+				ReadDistances ;
+				statusmessage("ReadDistances OK") ;
+				SetSets;
+				! Add NVK priority set asides on top of standard setasides
+				empty ParTmp, BestSetAsideIndex ;
+				BestSetAsideIndex := sort( ia | NVKprob(ia), - NVKprob(ia) ) ;
+				TotSetAsideArea := sum[ ia, Scale(ia) ] * SetasideRate * 2. - sum[ ia | hasSetAside(ia), Scale(ia) ];
+				for ib | hasSetAside(ib) = 0 do
+					hasSetAside(ib) := 1 ;
+					ParTmp += Scale(ib) ;
+					if ParTmp > TotSetAsideArea then
+						dialogmessage(NVKprob(ib));
+						break ;
+					endif ;
+				endfor ;
+				statusmessage("SetSets OK") ;
+				ManageTransports ;
+				statusmessage('ManageTransports completed') ;
+				SolveMaxNetSurplus ;
+				PutRegionResults;
+			}
+		}
+		Procedure SolveGMP {
+			Body: {
+				!-- Set up problem
+				empty x, x.ReducedCost, SaveRC;
+				
+				!-- Step 1: derive shadow prices to start with after running:
+				!-- (i) w. SweForGMP, (ii) running with SweForGMP
+				TotalSupply.Lower( (fut,t) |  CommodityType(fut) = 'D' or CommodityType(fut) = 'F' ) := q0(fut,t);
+				ActiveFacility := Facility - SuperFacility ;
+				statusmessage('Solving 1');
+				SweForGMP := GMP::Instance::Generate( MaxNetSurplus, "MaxNetSurplus" ) ;
+				
+				!-- Step 2: 
+				Iter1 := 0 ;
+				RelativeImprovm := 1 ;
+				while Iter1 < 5 do
+					statusmessage("Solving with All facilities - limited x variables: " + Iter1);
+					GMP::Instance::Solve( SweForGMP ); 
+					ObjectiveValue := GMP::Solution::GetObjective( SweForGMP, 1 );
+					dialogmessage( ObjectiveValue );
+					Iter1 += 1 ;
+				endwhile ;
+				
+				statusmessage("Initial Problem solves with FixedDemand for 4 periods");
+				for (fut,t) | t <= 1 and CommodityType(fut) = 'D' or CommodityType(fut) = 'F' do
+					GMP::Column::SetUpperBound( SweForGMP, TotalSupply(fut,t), q0(fut,t) );
+					GMP::Column::SetLowerBound( SweForGMP, TotalSupply(fut,t), q0(fut,t) );
+				endfor;
+				halt; 
+				
+				FixedDemand(fut,t) := q0(fut,t);
+				for (fut,t) | t <= 4 and fut = 'Heat__' or fut = 'BioFue' do
+					GMP::Column::SetUpperBound( SweForGMP, TotalSupply(fut,t), 0 );
+					GMP::Row::SetRightHandSide( SweForGMP, ConMinSupply(fut,t), FixedDemand(fut,t) );
+					GMP::Column::SetUpperBound( SweForGMP, Export(fut,t), 0 );
+				endfor;	
+				statusmessage("Problem solved with FixedDemand = q0 and limited no. x");
+				GMP::Instance::Solve( SweForGMP ); 
+				halt;
+			}
 		}
 	}
 	Procedure TestOfParticulars {
 		Body: {
-			OutputFileResults := 'TestOfParticulars'; 
-			ResultFile.PageWidth := 600 ;
-			PUT ResultFile ;
 			
-			PUT "Hej"; PUT /;
-			halt;
-			for fa | CurrFT(fa) = 'TerHea' do
-				PUT fa; PUT sum[ ia | RelevantTrpFromPlot('ResStm',ia,fa) , TrpCostPlotToFac('ResStm',ia,fa) ]:<20:0; put /;
-			endfor;
+			!OutputFileResults := 'TestOfParticulars_git.txt'; 
+			!ResultFile.PageWidth := 600 ;
+			!PUT ResultFile ;
 			
-			/*
-			for (ia) do
-				PUT ia
-				+ " age " + Age(ia,First(j),1):<10:1 
-				+ " dec " + m3Dec(ia,First(j),1)*Power(m3Vol(ia,First(j),1) + 0.0001,-1):<10:2
-				+ " Hgv " + Hgv(ia,First(j),1):<10:1
-				+ " Dgv " + Dgv(ia,First(j),1):<10:1  
-				+ " Stems " + Stems(ia,First(j),1):<10:1  
-				+ " SIS " + SIS(ia,First(j),1):<10:1  
-				+ " LSA " + LSA(ia,First(j),1):<10:1  
-				+ " Area " + Area(ia):<10:3  
-				; put /;
-			endfor; */
+			MaxNetSurplus.Objective := MaxCvalue.Objective;
+			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_test2.csv";
+			PutRegionResults ;
 			
-			
-			putclose ResultFile ;
+			!putclose ResultFile ;
 		}
 	}
 	Procedure MainInitialization;
