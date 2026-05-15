@@ -1897,20 +1897,21 @@ Model Main_SweFor {
 	Procedure RunStandard {
 		Body: {
 			!-- Read and save forest data
+			!-- Read and save forest data
 			FileNames('Forest')     		:= "D:/Users/ljeraa/BioFrame/BioframeData/ForestAllToAIMMS.txt";
 			FileNames('Factors')    		:= "D:/Users/ljeraa/BioFrame/BioframeData/FactorsToAIMMS.txt";
-			FileNames('ForestSave') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/NVKTest.data";
+			FileNames('ForestSave') 		:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/MMBpayment.data";
 			!-- Distance matrices
-			FileNames('DistancesLocToLoc') 	:= "D:/Users/ljeraa/BioFrame/SweForData/Cement/DistancesLocToLocWithTerminals.csv";
-			FileNames('DistancesPlotToLoc')	:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/PlotToLoc.csv";
+			FileNames('DistancesLocToLoc') 	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/DistancesLocToLoc.csv";
+			FileNames('DistancesPlotToLoc')	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/PlotToLoc.csv";
 			!-- Read forest reltaed data
-			FileNames('ForestMerge') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/NVK.data";
-			FileNames('SegmentData') 		:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/SegmentData_new.csv";
+			FileNames('ForestMerge') 		:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/MMBpayment.data";
+			FileNames('SegmentData') 		:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/SegmentData_0p15.csv";
 			!-- Facilities and input/output related data
-			FileNames('InputOutputData')	:= "D:/Users/ljeraa/BioFrame/SweForData/NVKstudy/InputOutputV2601.xlsx";
-			FileNames('FacilityData')   	:= "D:/Users/ljeraa/BioFrame/SweForData/Cement/SweForFacilytyData#3.xlsx";
-			!-- Output results
-			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Res_BAU.csv";
+			FileNames('InputOutputData')	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/InputOutputV2601.xlsx";
+			FileNames('FacilityData')   	:= "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/SweForFacilytyData#3.xlsx";
+			FileNames('RegionResult')       := "D:/Users/ljeraa/BioFrame/SweForData/MMBpayment/Standard_test.csv";
+			
 			
 			!--- All data preparation including saving
 			statusmessage("ReadingGAYData") ;

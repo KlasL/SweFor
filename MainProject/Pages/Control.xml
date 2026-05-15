@@ -1,16 +1,21 @@
 <?xml version="1.0"?>
-<Page Version="4000" TimeStamp="2026-04-18 04:40:29">
+<Page Version="4000" TimeStamp="2026-04-23 11:17:25">
 	<PageEditSize Type="Inherited" />
 	<ProjectUUID>CCC9E3B3-18B7-4930-8DA2-36EA75637D1B</ProjectUUID>
 	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
 	<Background Inherited="true" />
 	<PageObject Type="Table">
-		<Location top="60" left="66" bottom="192" right="300" />
+		<Location top="60" left="66" bottom="204" right="294" />
 		<TabOrder>1</TabOrder>
 		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
 		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
 		<BackgroundColor RGB="#ffffff" />
 		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>ForestMode</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="15" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
 		<ExplicitIdentifier>
 			<Identifier>RunMode</Identifier>
 			<FirstColumn>0</FirstColumn>
@@ -24,7 +29,7 @@
 		<ExplicitIdentifier>
 			<Identifier>ir</Identifier>
 			<FirstColumn>0</FirstColumn>
-			<NumberFormat Width="6" Decimals="3" />
+			<NumberFormat Width="6" Decimals="3" Alignment="Center" />
 		</ExplicitIdentifier>
 		<ExplicitIdentifier>
 			<Identifier>AmenityValuePerM3</Identifier>
@@ -60,8 +65,9 @@
 			<Symbol>RelativLSA</Symbol>
 			<Symbol>TotalForestArea</Symbol>
 			<Symbol>RunMode</Symbol>
-			<Symbol>AmenityValuePerM3</Symbol>
+			<Symbol>ForestMode</Symbol>
 			<Symbol>ir</Symbol>
+			<Symbol>AmenityValuePerM3</Symbol>
 		</Model>
 	</UsedReferences>
 </Page>
